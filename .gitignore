@@ -1,0 +1,6 @@
+.terraform
+*.tfstate*
+terraform-provider-spinnaker
+*.tf
+*.log
+pipelines
