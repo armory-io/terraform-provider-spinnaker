@@ -25,6 +25,22 @@ resource "spinnaker_pipeline" "terraform_example" {
 }
 ```
 
+## Installation
+
+#### Build from Source
+
+_Requires Go be installed on the system._
+
+```
+$ go get github.com/armory-io/terraform-provider-spinnaker
+$ cd $GOPATH/src/armory-io/terraform-provider-spinnaker
+$ go build
+```
+
+#### Installing 3rd Party Plugins
+
+See [Terraform documentation](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins) for installing 3rd party plugins.
+
 ## Provider
 
 #### Example Usage
