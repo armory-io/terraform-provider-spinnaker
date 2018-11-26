@@ -44,9 +44,7 @@ func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	data.SetId(application)
-	data.Set("email", email)
-	return nil
+	return resourceApplicationRead(data, meta)
 }
 
 func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error {
