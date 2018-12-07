@@ -89,3 +89,23 @@ resource "spinnaker_pipeline" "terraform_example" {
 * `application` - Application name
 * `name` - Pipeline name
 * `pipeline` - Pipeline JSON in string format, example `file(pipelines/example.json)`
+
+### `spinnaker_project`
+
+#### Example Usage
+
+```
+resource "spinnaker_project" "my_project" {
+    project = "projecttest"
+    email = "howdy@email.com"
+    applications = file("projects/my_project/applications.json")
+    pipelines = file("projects/my_project/pipelines.json")
+}
+```
+
+#### Argument Reference
+
+* `project` - Project name
+* `email` - Owner Name
+* `applications` - Applications to be included in the project
+* `pipelines` - Application Pipelines to be included in the project
