@@ -103,35 +103,3 @@ func DeleteProject(client *gate.GatewayClient, projectName string) error {
 
 	return nil
 }
-
-// todo: consider abstracting away to be shared with api/application
-func taskCompleted(task map[string]interface{}) bool {
-	taskStatus, exists := task["status"]
-	if !exists {
-		return false
-	}
-
-	COMPLETED := [...]string{"SUCCEEDED", "STOPPED", "SKIPPED", "TERMINAL", "FAILED_CONTINUE"}
-	for _, status := range COMPLETED {
-		if taskStatus == status {
-			return true
-		}
-	}
-	return false
-}
-
-// todo: consider abstracting away to be shared with api/application
-func taskSucceeded(task map[string]interface{}) bool {
-	taskStatus, exists := task["status"]
-	if !exists {
-		return false
-	}
-
-	SUCCESSFUL := [...]string{"SUCCEEDED", "STOPPED", "SKIPPED"}
-	for _, status := range SUCCESSFUL {
-		if taskStatus == status {
-			return true
-		}
-	}
-	return false
-}
