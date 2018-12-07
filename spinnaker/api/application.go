@@ -77,7 +77,7 @@ func CreateApplication(client *gate.GatewayClient, applicationName, email string
 	return nil
 }
 
-func DeleteAppliation(client *gate.GatewayClient, applicationName string) error {
+func DeleteApplication(client *gate.GatewayClient, applicationName string) error {
 	jobSpec := map[string]interface{}{
 		"type": "deleteApplication",
 		"application": map[string]interface{}{

@@ -68,7 +68,7 @@ func resourceApplicationDelete(data *schema.ResourceData, meta interface{}) erro
 	client := clientConfig.client
 	applicationName := data.Get("application").(string)
 
-	return api.DeleteAppliation(client, applicationName)
+	return api.DeleteApplication(client, applicationName)
 }
 
 func resourceApplicationExists(data *schema.ResourceData, meta interface{}) (bool, error) {
