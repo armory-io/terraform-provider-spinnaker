@@ -1,23 +1,26 @@
 package spinnaker
 
 import (
-	"encoding/json"
-	"strings"
+	"bytes"
+	"fmt"
+	"log"
+	"reflect"
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
 	"github.com/hashicorp/terraform/helper/schema"
+	jsoniter "github.com/json-iterator/go"
+	yaml "gopkg.in/yaml.v2"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func resourcePipelineTemplate() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
 			"template": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: suppressEquivalentPipelineTemplateDiffs,
 			},
 		},
 		Create: resourcePipelineTemplateCreate,
@@ -29,71 +32,152 @@ func resourcePipelineTemplate() *schema.Resource {
 }
 
 type templateRead struct {
-	Metadata struct {
-		Name string `json:"name"`
-	} `json:"metadata"`
+	ID string `json:"id"`
 }
 
 func resourcePipelineTemplateCreate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	templateName := data.Get("name").(string)
-	template := data.Get("pipeline").(string)
+	var templateName string
+	template := data.Get("template").(string)
 
-	var tmp map[string]interface{}
-	if err := json.NewDecoder(strings.NewReader(template)).Decode(&tmp); err != nil {
+	tmp := make(map[string]interface{})
+	err := yaml.Unmarshal([]byte(template), &tmp)
+	if err != nil {
 		return err
 	}
 
-	tmp["name"] = templateName
+	if v, ok := tmp["id"].(string); ok {
+		templateName = v
+	} else {
+		return fmt.Errorf("ID must be set in the template or as a variable")
+	}
 
-	if err := api.CreatePipelineTemplate(client, tmp); err != nil {
+	raw, err := json.Marshal(tmp)
+	if err != nil {
 		return err
 	}
 
+	log.Println("[DEBUG] Making request to spinnaker")
+	if err := api.CreatePipelineTemplate(client, bytes.NewReader(raw)); err != nil {
+		log.Printf("[DEBUG] Error response from spinnaker: %s", err.Error())
+		return err
+	}
+
+	log.Printf("[DEBUG] Created template successfully")
 	data.SetId(templateName)
-	return nil
+	return resourcePipelineTemplateRead(data, meta)
 }
 
 func resourcePipelineTemplateRead(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	templateName := data.Get("name").(string)
+	templateName := data.Id()
 
-	var t templateRead
+	t := make(map[string]interface{})
 	if err := api.GetPipelineTemplate(client, templateName, &t); err != nil {
 		return err
 	}
 
-	return readPipelineTemplate(data, t)
-}
+	// Remove timestamp from response
+	delete(t, "updateTs")
+	delete(t, "lastModifiedBy")
 
-func resourcePipelineTemplateUpdate(data *schema.ResourceData, meta interface{}) error {
+	raw, err := yaml.Marshal(t)
+	if err != nil {
+		return err
+	}
+	data.Set("name", t["id"].(string))
+	data.Set("template", string(raw))
+	data.SetId(t["id"].(string))
+
 	return nil
 }
 
+func resourcePipelineTemplateUpdate(data *schema.ResourceData, meta interface{}) error {
+	clientConfig := meta.(gateConfig)
+	client := clientConfig.client
+	templateName := data.Id()
+	template := data.Get("template").(string)
+
+	tmp := make(map[string]interface{})
+	err := yaml.Unmarshal([]byte(template), &tmp)
+	if err != nil {
+		return err
+	}
+
+	if v, ok := tmp["id"].(string); ok {
+		templateName = v
+	} else {
+		return fmt.Errorf("ID must be set in the template or as a variable")
+	}
+
+	raw, err := json.Marshal(tmp)
+	if err != nil {
+		return err
+	}
+
+	if err := api.UpdatePipelineTemplate(client, templateName, bytes.NewReader(raw)); err != nil {
+		return err
+	}
+
+	return resourcePipelineTemplateRead(data, meta)
+}
+
 func resourcePipelineTemplateDelete(data *schema.ResourceData, meta interface{}) error {
+	clientConfig := meta.(gateConfig)
+	client := clientConfig.client
+	templateName := data.Id()
+
+	if err := api.DeletePipelineTemplate(client, templateName); err != nil {
+		return err
+	}
+
+	data.SetId("")
 	return nil
 }
 
 func resourcePipelineTemplateExists(data *schema.ResourceData, meta interface{}) (bool, error) {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	templateName := data.Get("name").(string)
+	templateName := data.Id()
 
 	var t templateRead
 	if err := api.GetPipelineTemplate(client, templateName, &t); err != nil {
 		return false, err
 	}
 
-	if t.Metadata.Name == "" {
-		return false, nil
+	if t.ID == templateName {
+		return true, nil
 	}
 
-	return true, nil
+	return false, nil
 }
 
-func readPipelineTemplate(data *schema.ResourceData, template templateRead) error {
-	data.SetId(template.Metadata.Name)
-	return nil
+func suppressEquivalentPipelineTemplateDiffs(k, old, new string, d *schema.ResourceData) bool {
+	equivalent, err := areEqualYAML(old, new)
+	if err != nil {
+		return false
+	}
+
+	return equivalent
+}
+
+func areEqualYAML(s1, s2 string) (bool, error) {
+	var o1 interface{}
+	var o2 interface{}
+
+	var err error
+	log.Printf("[DEBUG] s1: %s", s1)
+	err = yaml.Unmarshal([]byte(s1), &o1)
+	if err != nil {
+		return false, fmt.Errorf("Error mashalling string 1 :: %s", err.Error())
+	}
+	log.Printf("[DEBUG] s2: %s", s2)
+	err = yaml.Unmarshal([]byte(s2), &o2)
+	if err != nil {
+		return false, fmt.Errorf("Error mashalling string 2 :: %s", err.Error())
+	}
+
+	return reflect.DeepEqual(o1, o2), nil
 }

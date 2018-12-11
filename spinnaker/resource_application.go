@@ -81,9 +81,8 @@ func resourceApplicationExists(data *schema.ResourceData, meta interface{}) (boo
 		errmsg := err.Error()
 		if strings.Contains(errmsg, "not found") {
 			return false, nil
-		} else {
-			return false, err
 		}
+		return false, err
 	}
 
 	if app.Name == "" {

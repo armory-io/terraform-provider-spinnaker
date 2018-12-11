@@ -44,3 +44,31 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 
 	return nil
 }
+
+func UpdatePipeline(client *gate.GatewayClient, pipelineID string, pipeline interface{}) error {
+	_, resp, err := client.PipelineControllerApi.UpdatePipelineUsingPUT(client.Context, pipelineID, pipeline)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Encountered an error saving pipeline, status code: %d\n", resp.StatusCode)
+	}
+
+	return nil
+}
+
+func DeletePipeline(client *gate.GatewayClient, applicationName, pipelineName string) error {
+	resp, err := client.PipelineControllerApi.DeletePipelineUsingDELETE(client.Context, applicationName, pipelineName)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Encountered an error deleting pipeline, status code: %d\n", resp.StatusCode)
+	}
+
+	return nil
+}

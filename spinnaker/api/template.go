@@ -8,14 +8,17 @@ import (
 	gate "github.com/spinnaker/spin/cmd/gateclient"
 )
 
+const (
+	ErrCodeNoSuchEntityException = "NoSuchEntityException"
+)
+
 func CreatePipelineTemplate(client *gate.GatewayClient, template interface{}) error {
 	resp, err := client.PipelineTemplatesControllerApi.CreateUsingPOST(client.Context, template)
-
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusAccepted {
 		return fmt.Errorf("Encountered an error saving template, status code: %d\n", resp.StatusCode)
 	}
 
@@ -29,13 +32,43 @@ func GetPipelineTemplate(client *gate.GatewayClient, templateID string, dest int
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Encountered an error getting pipeline in pipeline template %s, status code: %d\n",
+		return fmt.Errorf("Encountered an error getting pipeline template %s, status code: %d\n",
 			templateID,
 			resp.StatusCode)
 	}
 
 	if err := mapstructure.Decode(successPayload, dest); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func DeletePipelineTemplate(client *gate.GatewayClient, templateID string) error {
+	_, resp, err := client.PipelineTemplatesControllerApi.DeleteUsingDELETE(client.Context, templateID, nil)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusAccepted {
+		return fmt.Errorf("Encountered an error deleting pipeline template %s, status code: %d\n",
+			templateID,
+			resp.StatusCode)
+	}
+
+	return nil
+}
+
+func UpdatePipelineTemplate(client *gate.GatewayClient, templateID string, template interface{}) error {
+	resp, err := client.PipelineTemplatesControllerApi.UpdateUsingPOST(client.Context, templateID, template, nil)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusAccepted {
+		return fmt.Errorf("Encountered an error updating pipeline template %s, status code: %d\n",
+			templateID,
+			resp.StatusCode)
 	}
 
 	return nil
