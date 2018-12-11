@@ -4,3 +4,4 @@ terraform-provider-spinnaker
 *.tf
 *.log
 pipelines
+vendor/*
