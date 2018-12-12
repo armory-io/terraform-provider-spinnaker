@@ -2,12 +2,13 @@ package spinnaker
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
+	"github.com/ghodss/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
-	yaml "gopkg.in/yaml.v2"
 )
 
 type PipelineConfig struct {
@@ -63,20 +64,26 @@ func resourcePipelineTemplateConfigCreate(data *schema.ResourceData, meta interf
 	var name string
 	config := data.Get("pipeline_config").(string)
 
-	tmp := make(map[string]interface{})
-	err := yaml.Unmarshal([]byte(config), &tmp)
+	d, err := yaml.YAMLToJSON([]byte(config))
 	if err != nil {
 		return err
 	}
 
-	log.Printf("[DEBUG] %v", tmp)
+	var jsonContent map[string]interface{}
+	if err = json.NewDecoder(bytes.NewReader(d)).Decode(&jsonContent); err != nil {
+		return fmt.Errorf("Error decoding json: %s", err.Error())
+	}
 
-	pipeline, ok := tmp["pipeline"]
+	if _, ok := jsonContent["schema"]; !ok {
+		return fmt.Errorf("Pipeline save command currently only supports pipeline template configurations")
+	}
+
+	pipeline, ok := jsonContent["pipeline"]
 	if !ok {
 		return fmt.Errorf("pipeline not set in configuration")
 	}
 
-	p := pipeline.(map[interface{}]interface{})
+	p := pipeline.(map[string]interface{})
 	name, ok = p["name"].(string)
 	if !ok {
 		return fmt.Errorf("name not set in pipeline configuration")
@@ -91,16 +98,11 @@ func resourcePipelineTemplateConfigCreate(data *schema.ResourceData, meta interf
 		Name:        name,
 		Application: application,
 		Type:        "templatedPipeline",
-		Config:      tmp,
-	}
-
-	raw, err := json.Marshal(pConfig)
-	if err != nil {
-		return err
+		Config:      jsonContent,
 	}
 
 	log.Println("[DEBUG] Making request to spinnaker")
-	if err := api.CreatePipeline(client, bytes.NewReader(raw)); err != nil {
+	if err := api.CreatePipeline(client, pConfig); err != nil {
 		log.Printf("[DEBUG] Error response from spinnaker: %s", err.Error())
 		return err
 	}
@@ -142,25 +144,24 @@ func resourcePipelineTemplateConfigUpdate(data *schema.ResourceData, meta interf
 	client := clientConfig.client
 	config := data.Get("pipeline_config").(string)
 	pipelineID := data.Id()
-	tmp := make(map[string]interface{})
-	err := yaml.Unmarshal([]byte(config), &tmp)
+
+	d, err := yaml.YAMLToJSON([]byte(config))
 	if err != nil {
 		return err
 	}
 
+	var jsonContent map[string]interface{}
+	if err = json.NewDecoder(bytes.NewReader(d)).Decode(&jsonContent); err != nil {
+		return fmt.Errorf("Error decoding json: %s", err.Error())
+	}
 	pConfig := PipelineConfig{
 		Name:        data.Get("name").(string),
 		Application: data.Get("application").(string),
 		Type:        "templatedPipeline",
-		Config:      tmp,
+		Config:      jsonContent,
 	}
 
-	raw, err := json.Marshal(pConfig)
-	if err != nil {
-		return err
-	}
-
-	if err := api.UpdatePipeline(client, pipelineID, bytes.NewReader(raw)); err != nil {
+	if err := api.UpdatePipeline(client, pipelineID, pConfig); err != nil {
 		return err
 	}
 

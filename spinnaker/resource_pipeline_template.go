@@ -2,17 +2,18 @@ package spinnaker
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"reflect"
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
+	"github.com/ghodss/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
-	jsoniter "github.com/json-iterator/go"
-	yaml "gopkg.in/yaml.v2"
+	//jsoniter "github.com/json-iterator/go"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func resourcePipelineTemplate() *schema.Resource {
 	return &schema.Resource{
@@ -45,25 +46,24 @@ func resourcePipelineTemplateCreate(data *schema.ResourceData, meta interface{})
 	var templateName string
 	template := data.Get("template").(string)
 
-	tmp := make(map[string]interface{})
-	err := yaml.Unmarshal([]byte(template), &tmp)
+	d, err := yaml.YAMLToJSON([]byte(template))
 	if err != nil {
 		return err
 	}
 
-	if v, ok := tmp["id"].(string); ok {
-		templateName = v
-	} else {
-		return fmt.Errorf("ID must be set in the template")
+	var jsonContent map[string]interface{}
+	if err = json.NewDecoder(bytes.NewReader(d)).Decode(&jsonContent); err != nil {
+		return fmt.Errorf("Error decoding json: %s", err.Error())
 	}
 
-	raw, err := json.Marshal(tmp)
-	if err != nil {
-		return err
+	if _, ok := jsonContent["schema"]; !ok {
+		return fmt.Errorf("Pipeline save command currently only supports pipeline template configurations")
 	}
+
+	templateName = jsonContent["id"].(string)
 
 	log.Println("[DEBUG] Making request to spinnaker")
-	if err := api.CreatePipelineTemplate(client, bytes.NewReader(raw)); err != nil {
+	if err := api.CreatePipelineTemplate(client, jsonContent); err != nil {
 		log.Printf("[DEBUG] Error response from spinnaker: %s", err.Error())
 		return err
 	}
@@ -109,24 +109,23 @@ func resourcePipelineTemplateUpdate(data *schema.ResourceData, meta interface{})
 	var templateName string
 	template := data.Get("template").(string)
 
-	tmp := make(map[string]interface{})
-	err := yaml.Unmarshal([]byte(template), &tmp)
+	d, err := yaml.YAMLToJSON([]byte(template))
 	if err != nil {
 		return err
 	}
 
-	if v, ok := tmp["id"].(string); ok {
-		templateName = v
-	} else {
-		return fmt.Errorf("ID must be set in the template")
+	var jsonContent map[string]interface{}
+	if err = json.NewDecoder(bytes.NewReader(d)).Decode(&jsonContent); err != nil {
+		return fmt.Errorf("Error decoding json: %s", err.Error())
 	}
 
-	raw, err := json.Marshal(tmp)
-	if err != nil {
-		return err
+	if _, ok := jsonContent["schema"]; !ok {
+		return fmt.Errorf("Pipeline save command currently only supports pipeline template configurations")
 	}
 
-	if err := api.UpdatePipelineTemplate(client, templateName, bytes.NewReader(raw)); err != nil {
+	templateName = jsonContent["id"].(string)
+
+	if err := api.UpdatePipelineTemplate(client, templateName, jsonContent); err != nil {
 		return err
 	}
 
