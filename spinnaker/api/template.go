@@ -28,13 +28,19 @@ func CreatePipelineTemplate(client *gate.GatewayClient, template interface{}) er
 func GetPipelineTemplate(client *gate.GatewayClient, templateID string, dest interface{}) error {
 	successPayload, resp, err := client.PipelineTemplatesControllerApi.GetUsingGET(client.Context, templateID)
 	if err != nil {
-		return err
+		if resp.StatusCode == http.StatusNotFound {
+			return fmt.Errorf("%s", ErrCodeNoSuchEntityException)
+		}
+		return fmt.Errorf("Encountered an error getting pipeline template %s, %s\n",
+			templateID,
+			err.Error())
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Encountered an error getting pipeline template %s, status code: %d\n",
 			templateID,
-			resp.StatusCode)
+			resp.StatusCode,
+		)
 	}
 
 	if err := mapstructure.Decode(successPayload, dest); err != nil {

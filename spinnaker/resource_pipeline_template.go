@@ -22,12 +22,16 @@ func resourcePipelineTemplate() *schema.Resource {
 				Required:         true,
 				DiffSuppressFunc: suppressEquivalentPipelineTemplateDiffs,
 			},
+			"url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		Create: resourcePipelineTemplateCreate,
 		Read:   resourcePipelineTemplateRead,
 		Update: resourcePipelineTemplateUpdate,
 		Delete: resourcePipelineTemplateDelete,
-		Exists: resourcePipelineTemplateExists,
+		//Exists: resourcePipelineTemplateExists,
 	}
 }
 
@@ -50,7 +54,7 @@ func resourcePipelineTemplateCreate(data *schema.ResourceData, meta interface{})
 	if v, ok := tmp["id"].(string); ok {
 		templateName = v
 	} else {
-		return fmt.Errorf("ID must be set in the template or as a variable")
+		return fmt.Errorf("ID must be set in the template")
 	}
 
 	raw, err := json.Marshal(tmp)
@@ -76,6 +80,10 @@ func resourcePipelineTemplateRead(data *schema.ResourceData, meta interface{}) e
 
 	t := make(map[string]interface{})
 	if err := api.GetPipelineTemplate(client, templateName, &t); err != nil {
+		if err.Error() == api.ErrCodeNoSuchEntityException {
+			data.SetId("")
+			return nil
+		}
 		return err
 	}
 
@@ -89,6 +97,7 @@ func resourcePipelineTemplateRead(data *schema.ResourceData, meta interface{}) e
 	}
 	data.Set("name", t["id"].(string))
 	data.Set("template", string(raw))
+	data.Set("url", fmt.Sprintf("spinnaker://%s", t["id"].(string)))
 	data.SetId(t["id"].(string))
 
 	return nil
@@ -97,7 +106,7 @@ func resourcePipelineTemplateRead(data *schema.ResourceData, meta interface{}) e
 func resourcePipelineTemplateUpdate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	templateName := data.Id()
+	var templateName string
 	template := data.Get("template").(string)
 
 	tmp := make(map[string]interface{})
@@ -109,7 +118,7 @@ func resourcePipelineTemplateUpdate(data *schema.ResourceData, meta interface{})
 	if v, ok := tmp["id"].(string); ok {
 		templateName = v
 	} else {
-		return fmt.Errorf("ID must be set in the template or as a variable")
+		return fmt.Errorf("ID must be set in the template")
 	}
 
 	raw, err := json.Marshal(tmp)
@@ -121,6 +130,7 @@ func resourcePipelineTemplateUpdate(data *schema.ResourceData, meta interface{})
 		return err
 	}
 
+	data.SetId(templateName)
 	return resourcePipelineTemplateRead(data, meta)
 }
 
@@ -144,6 +154,9 @@ func resourcePipelineTemplateExists(data *schema.ResourceData, meta interface{})
 
 	var t templateRead
 	if err := api.GetPipelineTemplate(client, templateName, &t); err != nil {
+		if err.Error() == api.ErrCodeNoSuchEntityException {
+			return false, nil
+		}
 		return false, err
 	}
 
