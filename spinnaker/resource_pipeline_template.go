@@ -10,10 +10,7 @@ import (
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
 	"github.com/ghodss/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
-	//jsoniter "github.com/json-iterator/go"
 )
-
-//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func resourcePipelineTemplate() *schema.Resource {
 	return &schema.Resource{
@@ -91,7 +88,12 @@ func resourcePipelineTemplateRead(data *schema.ResourceData, meta interface{}) e
 	delete(t, "updateTs")
 	delete(t, "lastModifiedBy")
 
-	raw, err := yaml.Marshal(t)
+	jsonContent, err := json.Marshal(t)
+	if err != nil {
+		return err
+	}
+
+	raw, err := yaml.JSONToYAML(jsonContent)
 	if err != nil {
 		return err
 	}
@@ -167,7 +169,7 @@ func resourcePipelineTemplateExists(data *schema.ResourceData, meta interface{})
 }
 
 func suppressEquivalentPipelineTemplateDiffs(k, old, new string, d *schema.ResourceData) bool {
-	equivalent, err := areEqualYAML(old, new)
+	equivalent, err := areEqualJSON(old, new)
 	if err != nil {
 		return false
 	}
@@ -175,7 +177,7 @@ func suppressEquivalentPipelineTemplateDiffs(k, old, new string, d *schema.Resou
 	return equivalent
 }
 
-func areEqualYAML(s1, s2 string) (bool, error) {
+func areEqualJSON(s1, s2 string) (bool, error) {
 	var o1 interface{}
 	var o2 interface{}
 

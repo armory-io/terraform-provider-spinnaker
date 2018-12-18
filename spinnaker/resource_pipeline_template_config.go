@@ -49,6 +49,21 @@ func resourcePipelineTemplateConfig() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
+			"parallel": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
+			"limit_concurrent": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
+			"keep_waiting": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 		Create: resourcePipelineTemplateConfigCreate,
 		Read:   resourcePipelineTemplateConfigRead,
@@ -60,55 +75,20 @@ func resourcePipelineTemplateConfig() *schema.Resource {
 func resourcePipelineTemplateConfigCreate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	var application string
-	var name string
-	config := data.Get("pipeline_config").(string)
 
-	d, err := yaml.YAMLToJSON([]byte(config))
+	pConfig, err := buildConfig(data)
 	if err != nil {
 		return err
 	}
 
-	var jsonContent map[string]interface{}
-	if err = json.NewDecoder(bytes.NewReader(d)).Decode(&jsonContent); err != nil {
-		return fmt.Errorf("Error decoding json: %s", err.Error())
-	}
-
-	if _, ok := jsonContent["schema"]; !ok {
-		return fmt.Errorf("Pipeline save command currently only supports pipeline template configurations")
-	}
-
-	pipeline, ok := jsonContent["pipeline"]
-	if !ok {
-		return fmt.Errorf("pipeline not set in configuration")
-	}
-
-	p := pipeline.(map[string]interface{})
-	name, ok = p["name"].(string)
-	if !ok {
-		return fmt.Errorf("name not set in pipeline configuration")
-	}
-
-	application, ok = p["application"].(string)
-	if !ok {
-		return fmt.Errorf("application not set in pipeline configuration")
-	}
-
-	pConfig := PipelineConfig{
-		Name:        name,
-		Application: application,
-		Type:        "templatedPipeline",
-		Config:      jsonContent,
-	}
-
 	log.Println("[DEBUG] Making request to spinnaker")
-	if err := api.CreatePipeline(client, pConfig); err != nil {
+	if err := api.CreatePipeline(client, *pConfig); err != nil {
 		log.Printf("[DEBUG] Error response from spinnaker: %s", err.Error())
 		return err
 	}
 
-	data.Set("name", name)
-	data.Set("application", application)
+	data.Set("name", pConfig.Name)
+	data.Set("application", pConfig.Application)
 	return resourcePipelineTemplateConfigRead(data, meta)
 }
 
@@ -134,6 +114,9 @@ func resourcePipelineTemplateConfigRead(data *schema.ResourceData, meta interfac
 
 	data.Set("name", p.Name)
 	data.Set("application", p.Application)
+	data.Set("parallel", p.Parallel)
+	data.Set("keep_waiting", p.KeepWaitingPipelines)
+	data.Set("limit_concurrent", p.LimitConcurrent)
 	data.Set("pipeline_config", raw)
 	data.SetId(p.ID)
 	return nil
@@ -142,26 +125,15 @@ func resourcePipelineTemplateConfigRead(data *schema.ResourceData, meta interfac
 func resourcePipelineTemplateConfigUpdate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	config := data.Get("pipeline_config").(string)
 	pipelineID := data.Id()
 
-	d, err := yaml.YAMLToJSON([]byte(config))
+	pConfig, err := buildConfig(data)
 	if err != nil {
 		return err
 	}
 
-	var jsonContent map[string]interface{}
-	if err = json.NewDecoder(bytes.NewReader(d)).Decode(&jsonContent); err != nil {
-		return fmt.Errorf("Error decoding json: %s", err.Error())
-	}
-	pConfig := PipelineConfig{
-		Name:        data.Get("name").(string),
-		Application: data.Get("application").(string),
-		Type:        "templatedPipeline",
-		Config:      jsonContent,
-	}
-
-	if err := api.UpdatePipeline(client, pipelineID, pConfig); err != nil {
+	pConfig.ID = pipelineID
+	if err := api.UpdatePipeline(client, pipelineID, *pConfig); err != nil {
 		return err
 	}
 
@@ -200,4 +172,52 @@ func resourcePipelineTemplateConfigExists(data *schema.ResourceData, meta interf
 	}
 
 	return false, nil
+}
+
+func buildConfig(data *schema.ResourceData) (*PipelineConfig, error) {
+	config := data.Get("pipeline_config").(string)
+
+	d, err := yaml.YAMLToJSON([]byte(config))
+	if err != nil {
+		return nil, err
+	}
+
+	var jsonContent map[string]interface{}
+	if err = json.NewDecoder(bytes.NewReader(d)).Decode(&jsonContent); err != nil {
+		return nil, fmt.Errorf("Error decoding json: %s", err.Error())
+	}
+
+	pipeline, ok := jsonContent["pipeline"]
+	if !ok {
+		return nil, fmt.Errorf("pipeline not set in configuration")
+	}
+
+	p := pipeline.(map[string]interface{})
+	name, ok := p["name"].(string)
+	if !ok {
+		return nil, fmt.Errorf("name not set in pipeline configuration")
+	}
+
+	application, ok := p["application"].(string)
+	if !ok {
+		return nil, fmt.Errorf("application not set in pipeline configuration")
+	}
+
+	pConfig := &PipelineConfig{
+		Name:                 name,
+		Application:          application,
+		Type:                 "templatedPipeline",
+		Parallel:             data.Get("parallel").(bool),
+		LimitConcurrent:      data.Get("limit_concurrent").(bool),
+		KeepWaitingPipelines: data.Get("keep_waiting").(bool),
+		Config:               jsonContent,
+	}
+
+	if c, ok := jsonContent["configuration"].(map[string]interface{}); ok {
+		log.Printf("[DEBUG] %s", c)
+		if description, ok := c["description"]; ok {
+			pConfig.Description = description.(string)
+		}
+	}
+	return pConfig, nil
 }

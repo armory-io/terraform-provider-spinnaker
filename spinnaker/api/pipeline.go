@@ -28,7 +28,9 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 		pipelineName)
 
 	if err != nil {
-		return err
+		if resp.StatusCode == http.StatusNotFound {
+			return fmt.Errorf("%s", ErrCodeNoSuchEntityException)
+		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -36,6 +38,10 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 			applicationName,
 			pipelineName,
 			resp.StatusCode)
+	}
+
+	if successPayload == nil {
+		return fmt.Errorf(ErrCodeNoSuchEntityException)
 	}
 
 	if err := mapstructure.Decode(successPayload, dest); err != nil {

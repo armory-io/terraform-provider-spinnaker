@@ -13,7 +13,7 @@ const (
 )
 
 func CreatePipelineTemplate(client *gate.GatewayClient, template interface{}) error {
-	resp, err := client.PipelineTemplatesControllerApi.CreateUsingPOST(client.Context, template)
+	resp, err := client.V2PipelineTemplatesControllerApi.CreateUsingPOST1(client.Context, template)
 	if err != nil {
 		return err
 	}
@@ -41,6 +41,10 @@ func GetPipelineTemplate(client *gate.GatewayClient, templateID string, dest int
 			templateID,
 			resp.StatusCode,
 		)
+	}
+
+	if successPayload == nil {
+		return fmt.Errorf(ErrCodeNoSuchEntityException)
 	}
 
 	if err := mapstructure.Decode(successPayload, dest); err != nil {
