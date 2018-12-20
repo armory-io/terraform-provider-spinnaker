@@ -13,7 +13,7 @@ const (
 )
 
 func CreatePipelineTemplate(client *gate.GatewayClient, template interface{}) error {
-	resp, err := client.V2PipelineTemplatesControllerApi.CreateUsingPOST1(client.Context, template)
+	resp, err := client.PipelineTemplatesControllerApi.CreateUsingPOST(client.Context, template)
 	if err != nil {
 		return err
 	}
