@@ -47,13 +47,17 @@ See [Terraform documentation](https://www.terraform.io/docs/configuration/provid
 
 ```
 provider "spinnaker" {
-    server = "http://spinnaker-gate.myorg.io"
+    server             = "http://spinnaker-gate.myorg.io"
+    config             = "/path/to/config.yml"
+    ignore_cert_errors = true
 }
 ```
 
 #### Argument Reference
 
 * `server` - The Gate API Url
+* `config` - (Optional) - Path to Gate config file. See the [Spin CLI](https://github.com/spinnaker/spin/blob/master/config/example.yaml) for an example config.
+* `ignore_cert_errors` - (Optional) - Set this to `true` to ignore certificate errors from Gate. Defaults to `false`.
 
 
 ## Resources
