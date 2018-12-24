@@ -21,7 +21,7 @@ resource "spinnaker_application" "my_app" {
 resource "spinnaker_pipeline" "terraform_example" {
     application = "${spinnaker_application.my_app.application}"
     name = "Example Pipeline"
-    pipeline = file("pipelines/example.json")
+    pipeline = "${file("pipelines/example.json")}"
 }
 ```
 
@@ -80,7 +80,7 @@ resource "spinnaker_application" "my_app" {
 resource "spinnaker_pipeline" "terraform_example" {
     application = "${spinnaker_application.my_app.application}"
     name = "Example Pipeline"
-    pipeline = file("pipelines/example.json")
+    pipeline = "${file("pipelines/example.json")}"
 }
 ```
 
@@ -98,8 +98,8 @@ resource "spinnaker_pipeline" "terraform_example" {
 resource "spinnaker_project" "my_project" {
     project = "projecttest"
     email = "howdy@email.com"
-    applications = file("projects/my_project/applications.json")
-    pipelines = file("projects/my_project/pipelines.json")
+    applications = "${file("projects/my_project/applications.json")}"
+    pipelines = "${file("projects/my_project/pipelines.json")}"
 }
 ```
 
