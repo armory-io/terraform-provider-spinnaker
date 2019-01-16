@@ -33,7 +33,7 @@ _Requires Go be installed on the system._
 
 ```
 $ go get github.com/armory-io/terraform-provider-spinnaker
-$ cd $GOPATH/src/armory-io/terraform-provider-spinnaker
+$ cd $GOPATH/src/github.com/armory-io/terraform-provider-spinnaker
 $ go build
 ```
 
