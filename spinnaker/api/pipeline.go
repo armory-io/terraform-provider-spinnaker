@@ -31,6 +31,9 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 		if resp.StatusCode == http.StatusNotFound {
 			return fmt.Errorf("%s", ErrCodeNoSuchEntityException)
 		}
+		return fmt.Errorf("Encountered an error getting pipeline %s, %s\n",
+			pipelineName,
+			err.Error())
 	}
 
 	if resp.StatusCode != http.StatusOK {

@@ -29,7 +29,7 @@ func resourcePipelineTemplate() *schema.Resource {
 		Read:   resourcePipelineTemplateRead,
 		Update: resourcePipelineTemplateUpdate,
 		Delete: resourcePipelineTemplateDelete,
-		//Exists: resourcePipelineTemplateExists,
+		Exists: resourcePipelineTemplateExists,
 	}
 }
 
