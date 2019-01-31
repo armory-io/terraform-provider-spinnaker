@@ -29,11 +29,12 @@ resource "spinnaker_pipeline" "terraform_example" {
 
 #### Build from Source
 
-_Requires Go be installed on the system._
+_Requires Go and [Dep](https://github.com/golang/dep#installation) be installed on the system._
 
 ```
 $ go get github.com/armory-io/terraform-provider-spinnaker
 $ cd $GOPATH/src/github.com/armory-io/terraform-provider-spinnaker
+$ dep ensure
 $ go build
 ```
 
@@ -93,3 +94,39 @@ resource "spinnaker_pipeline" "terraform_example" {
 * `application` - Application name
 * `name` - Pipeline name
 * `pipeline` - Pipeline JSON in string format, example `file(pipelines/example.json)`
+
+### `spinnaker_pipeline_template`
+
+#### Example Usage
+
+```
+data "template_file" "dcd_template" {
+    template = "${file("template.yml")}"
+}
+
+resource "spinnaker_pipeline_template" "terraform_example" {
+    template = "${data.template_file.dcd_template.rendered}"
+}
+```
+
+#### Argument Reference
+
+* `template` - A yaml formated [DCD Spec](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#templates) pipeline template
+
+### `spinnaker_pipeline_template_config`
+
+#### Example Usage
+
+```
+data "template_file" "dcd_template_config" {
+    template = "${file("config.yml")}"
+}
+
+resource "spinnaker_pipeline_template_config" "terraform_example" {
+    pipeline_config = "${data.template_file.dcd_template_config.rendered}"
+}
+```
+
+#### Argument Reference
+
+* `pipeline_config` - A yaml formated configuration for a [DCD Spec](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#configurations) pipeline template
