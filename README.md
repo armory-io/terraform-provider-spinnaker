@@ -111,7 +111,7 @@ resource "spinnaker_pipeline_template" "terraform_example" {
 
 #### Argument Reference
 
-* `template` - A yaml formated [DCD Spec](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#templates) pipeline template
+* `template` - A yaml formated [DCD Spec pipeline template](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#templates) 
 
 ### `spinnaker_pipeline_template_config`
 
@@ -129,4 +129,4 @@ resource "spinnaker_pipeline_template_config" "terraform_example" {
 
 #### Argument Reference
 
-* `pipeline_config` - A yaml formated configuration for a [DCD Spec](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#configurations) pipeline template
+* `pipeline_config` - A yaml formated [DCD Spec pipeline configuration](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#configurations)
