@@ -28,7 +28,12 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 		pipelineName)
 
 	if err != nil {
-		return err
+		if resp.StatusCode == http.StatusNotFound {
+			return fmt.Errorf("%s", ErrCodeNoSuchEntityException)
+		}
+		return fmt.Errorf("Encountered an error getting pipeline %s, %s\n",
+			pipelineName,
+			err.Error())
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -38,8 +43,40 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 			resp.StatusCode)
 	}
 
+	if successPayload == nil {
+		return fmt.Errorf(ErrCodeNoSuchEntityException)
+	}
+
 	if err := mapstructure.Decode(successPayload, dest); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func UpdatePipeline(client *gate.GatewayClient, pipelineID string, pipeline interface{}) error {
+	_, resp, err := client.PipelineControllerApi.UpdatePipelineUsingPUT(client.Context, pipelineID, pipeline)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Encountered an error saving pipeline, status code: %d\n", resp.StatusCode)
+	}
+
+	return nil
+}
+
+func DeletePipeline(client *gate.GatewayClient, applicationName, pipelineName string) error {
+	resp, err := client.PipelineControllerApi.DeletePipelineUsingDELETE(client.Context, applicationName, pipelineName)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Encountered an error deleting pipeline, status code: %d\n", resp.StatusCode)
 	}
 
 	return nil
