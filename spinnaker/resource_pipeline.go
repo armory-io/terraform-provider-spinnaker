@@ -42,11 +42,7 @@ func resourcePipeline() *schema.Resource {
 type pipelineRead struct {
 	Name        string `json:"name"`
 	Application string `json:"application"`
-	Config      struct {
-		Pipeline struct {
-			ConfigID string `json:"pipelineConfigId"`
-		} `json:"pipeline"`
-	} `json:"config"`
+	Id          string `json:"id"`
 }
 
 func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
@@ -63,12 +59,11 @@ func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
 
 	tmp["application"] = applicationName
 	tmp["name"] = pipelineName
+	delete(tmp, "id")
 
 	if err := api.CreatePipeline(client, tmp); err != nil {
 		return err
 	}
-
-	//data.SetId(fmt.Sprintf("%s/%s", applicationName, pipelineName))
 
 	return resourcePipelineRead(data, meta)
 }
@@ -84,7 +79,13 @@ func resourcePipelineRead(data *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	return readPipeline(data, p)
+	err := data.Set("pipeline_id", p.Id)
+	if err != nil {
+		return fmt.Errorf("Could not set pipeline_id for pipeline %s", pipelineName)
+	}
+	data.SetId(p.Id)
+
+	return nil
 }
 
 func resourcePipelineUpdate(data *schema.ResourceData, meta interface{}) error {
@@ -99,7 +100,16 @@ func resourcePipelineUpdate(data *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("No pipeline_id found to pipeline in %s with name %s", applicationName, pipelineName)
 	}
 
-	if err := api.UpdatePipeline(client, pipelineID.(string), pipeline); err != nil {
+	var pipe map[string]interface{}
+	err := json.Unmarshal([]byte(pipeline), &pipe)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal pipeline")
+	}
+
+	pipe["application"] = applicationName
+	pipe["name"] = pipelineName
+
+	if err := api.UpdatePipeline(client, pipelineID.(string), pipe); err != nil {
 		return err
 	}
 	return resourcePipelineRead(data, meta)
@@ -115,7 +125,6 @@ func resourcePipelineDelete(data *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	data.SetId("")
 	return nil
 }
 
@@ -135,10 +144,4 @@ func resourcePipelineExists(data *schema.ResourceData, meta interface{}) (bool, 
 	}
 
 	return true, nil
-}
-
-func readPipeline(data *schema.ResourceData, pipeline pipelineRead) error {
-	data.Set("pipeline_id", pipeline.Config.Pipeline.ConfigID)
-	data.SetId(fmt.Sprintf("%s/%s", pipeline.Application, pipeline.Name))
-	return nil
 }
