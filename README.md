@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/armory-io/terraform-provider-spinnaker/tree/master.svg?style=svg)](https://circleci.com/gh/armory-io/terraform-provider-spinnaker/tree/master)
+
 # terraform-provider-spinnaker
 
 Manage [Spinnaker](https://spinnaker.io) applications and pipelines with Terraform.
