@@ -17,6 +17,10 @@ func datasourcePipeline() *schema.Resource {
 				ForceNew: true,
 				Required: true,
 			},
+			"pipeline": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"pipeline_id": {
 				Type:     schema.TypeString,
 				Computed: true,
