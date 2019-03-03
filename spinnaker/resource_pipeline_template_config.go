@@ -99,7 +99,7 @@ func resourcePipelineTemplateConfigRead(data *schema.ResourceData, meta interfac
 	name := data.Get("name").(string)
 
 	p := PipelineConfig{}
-	if err := api.GetPipeline(client, application, name, &p); err != nil {
+	if _, err := api.GetPipeline(client, application, name, &p); err != nil {
 		if err.Error() == api.ErrCodeNoSuchEntityException {
 			data.SetId("")
 			return nil

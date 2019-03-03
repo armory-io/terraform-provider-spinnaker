@@ -22,36 +22,36 @@ func CreatePipeline(client *gate.GatewayClient, pipeline interface{}) error {
 	return nil
 }
 
-func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName string, dest interface{}) error {
-	successPayload, resp, err := client.ApplicationControllerApi.GetPipelineConfigUsingGET(client.Context,
+func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName string, dest interface{}) (map[string]interface{}, error) {
+	jsonMap, resp, err := client.ApplicationControllerApi.GetPipelineConfigUsingGET(client.Context,
 		applicationName,
 		pipelineName)
 
 	if err != nil {
 		if resp.StatusCode == http.StatusNotFound {
-			return fmt.Errorf("%s", ErrCodeNoSuchEntityException)
+			return jsonMap, fmt.Errorf("%s", ErrCodeNoSuchEntityException)
 		}
-		return fmt.Errorf("Encountered an error getting pipeline %s, %s\n",
+		return jsonMap, fmt.Errorf("Encountered an error getting pipeline %s, %s\n",
 			pipelineName,
 			err.Error())
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Encountered an error getting pipeline in pipeline %s with name %s, status code: %d\n",
+		return jsonMap, fmt.Errorf("Encountered an error getting pipeline in pipeline %s with name %s, status code: %d\n",
 			applicationName,
 			pipelineName,
 			resp.StatusCode)
 	}
 
-	if successPayload == nil {
-		return fmt.Errorf(ErrCodeNoSuchEntityException)
+	if jsonMap == nil {
+		return jsonMap, fmt.Errorf(ErrCodeNoSuchEntityException)
 	}
 
-	if err := mapstructure.Decode(successPayload, dest); err != nil {
-		return err
+	if err := mapstructure.Decode(jsonMap, dest); err != nil {
+		return jsonMap, err
 	}
 
-	return nil
+	return jsonMap, nil
 }
 
 func UpdatePipeline(client *gate.GatewayClient, pipelineID string, pipeline interface{}) error {
