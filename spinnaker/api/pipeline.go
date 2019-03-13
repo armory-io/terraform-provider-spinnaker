@@ -28,7 +28,7 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 		pipelineName)
 
 	if err != nil {
-		if resp.StatusCode == http.StatusNotFound {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			return jsonMap, fmt.Errorf("%s", ErrCodeNoSuchEntityException)
 		}
 		return jsonMap, fmt.Errorf("Encountered an error getting pipeline %s, %s\n",

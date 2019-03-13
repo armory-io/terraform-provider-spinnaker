@@ -13,7 +13,7 @@ import (
 func GetApplication(client *gate.GatewayClient, applicationName string, dest interface{}) error {
 	app, resp, err := client.ApplicationControllerApi.GetApplicationUsingGET(client.Context, applicationName, map[string]interface{}{})
 	if resp != nil {
-		if resp.StatusCode == http.StatusNotFound {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			return fmt.Errorf("Application '%s' not found\n", applicationName)
 		} else if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("Encountered an error getting application, status code: %d\n", resp.StatusCode)

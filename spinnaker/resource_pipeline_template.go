@@ -153,8 +153,8 @@ func resourcePipelineTemplateExists(data *schema.ResourceData, meta interface{})
 	client := clientConfig.client
 	templateName := data.Id()
 
-	var t templateRead
-	if err := api.GetPipelineTemplate(client, templateName, &t); err != nil {
+	t := &templateRead{}
+	if err := api.GetPipelineTemplate(client, templateName, t); err != nil {
 		if err.Error() == api.ErrCodeNoSuchEntityException {
 			return false, nil
 		}
