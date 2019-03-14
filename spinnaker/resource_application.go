@@ -122,7 +122,35 @@ func resourceApplicationExists(data *schema.ResourceData, meta interface{}) (boo
 	return true, nil
 }
 
-func readApplication(data *schema.ResourceData, application applicationRead) error {
+func applicationFromResource(data *schema.ResourceData) *application {
+	app := &application{
+		Name:         data.Get("application").(string),
+		Email:        data.Get("email").(string),
+		InstancePort: data.Get("instance_port").(int),
+		Permissions:  make(map[string][]string),
+	}
+
+	// convert {"team_name": "read_write"} to {"READ": ["team_name"], "WRITE": ["team_name"]}
+	// for the spinnaker API
+	readPerms := []string{}
+	writePerms := []string{}
+	for team, permI := range data.Get("permissions").(map[string]interface{}) {
+		perm := permI.(string)
+		if strings.HasPrefix(perm, "read") {
+			readPerms = append(readPerms, team)
+		}
+		if strings.HasSuffix(perm, "write") {
+			writePerms = append(writePerms, team)
+		}
+
+	}
+	app.Permissions["READ"] = readPerms
+	app.Permissions["WRITE"] = writePerms
+
+	return app
+}
+
+func readApplication(data *schema.ResourceData, application *applicationRead) error {
 	data.SetId(application.Name)
 	return nil
 }
