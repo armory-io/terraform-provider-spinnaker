@@ -27,11 +27,24 @@ func resourceApplication() *schema.Resource {
 	}
 }
 
+// application represents the Gate API schema
+//
+// HINT: to extend this schema have a look at the output
+// of the spin (https://github.com/spinnaker/spin)
+// application get command.
+type application struct {
+	Name         string              `json:"name"`
+	Email        string              `json:"email"`
+	InstancePort int                 `json:"instancePort"`
+	Permissions  map[string][]string `json:"permissions,omitempty"`
+}
+
+// applicationRead represents the Gate API schema of an application
+// get request. The relevenat part of the schema is identical with
+// the application struct, it's just wrapped in an attributes field.
 type applicationRead struct {
-	Name       string `json:"name"`
-	Attributes struct {
-		Email string `json:"email"`
-	} `json:"attributes"`
+	Name       string       `json:"name"`
+	Attributes *application `json:"attributes"`
 }
 
 func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) error {
