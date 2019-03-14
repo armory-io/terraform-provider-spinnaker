@@ -152,5 +152,25 @@ func applicationFromResource(data *schema.ResourceData) *application {
 
 func readApplication(data *schema.ResourceData, application *applicationRead) error {
 	data.SetId(application.Name)
+	data.Set("name", application.Name)
+	data.Set("email", application.Attributes.Email)
+	data.Set("instance_port", application.Attributes.InstancePort)
+
+	// convert {"READ": ["team_name"], "WRITE": ["team_name"]} to {"team_name": "read_write"}
+	// for the spinnaker API
+	perms := make(map[string]string)
+	for _, team := range application.Attributes.Permissions["READ"] {
+		perms[team] = "read"
+	}
+	for _, team := range application.Attributes.Permissions["WRITE"] {
+		perm, ok := perms[team]
+		if ok {
+			// perms contains "read", append undescore to create "read_write"
+			perm += "_"
+		}
+		perm += "write"
+		perms[team] = perm
+	}
+	data.Set("permissions", perms)
 	return nil
 }
