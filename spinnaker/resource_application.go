@@ -90,7 +90,16 @@ func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceApplicationUpdate(data *schema.ResourceData, meta interface{}) error {
-	return nil
+	// the application update in spinnaker is an simple upsert
+	clientConfig := meta.(gateConfig)
+	client := clientConfig.client
+
+	app := applicationFromResource(data)
+	if err := api.CreateApplication(client, app.Name, app); err != nil {
+		return err
+	}
+
+	return resourceApplicationRead(data, meta)
 }
 
 func resourceApplicationDelete(data *schema.ResourceData, meta interface{}) error {
