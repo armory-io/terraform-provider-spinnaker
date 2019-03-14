@@ -5,6 +5,7 @@ import (
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 )
 
 func resourceApplication() *schema.Resource {
@@ -24,12 +25,14 @@ func resourceApplication() *schema.Resource {
 				Required:     false,
 				Optional:     true,
 				Default:      80,
+				ValidateFunc: validation.IntBetween(1, 65535),
 			},
 			"permissions": {
 				Type:     schema.TypeMap,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
+					ValidateFunc: validation.StringInSlice([]string{"read", "write", "read_write"}, false),
 				},
 			},
 		},

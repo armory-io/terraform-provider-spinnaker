@@ -240,7 +240,7 @@
   revision = "fa9f258a92500514cc8e9c67020487709df92432"
 
 [[projects]]
-  digest = "1:8ee6b299ec5e027376522696c4a2d236c5d4da19ccc23d8cc31a3530ce9cb26b"
+  digest = "1:55226d01af9764e7eb44603845b02dfac641b15489ab1b8a285cad577daef85f"
   name = "github.com/hashicorp/terraform"
   packages = [
     "config",
@@ -252,6 +252,8 @@
     "helper/hashcode",
     "helper/hilmapstructure",
     "helper/schema",
+    "helper/structure",
+    "helper/validation",
     "httpclient",
     "moduledeps",
     "plugin",
@@ -615,6 +617,7 @@
   input-imports = [
     "github.com/ghodss/yaml",
     "github.com/hashicorp/terraform/helper/schema",
+    "github.com/hashicorp/terraform/helper/validation",
     "github.com/hashicorp/terraform/plugin",
     "github.com/hashicorp/terraform/terraform",
     "github.com/mitchellh/mapstructure",
