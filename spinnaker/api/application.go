@@ -31,16 +31,10 @@ func GetApplication(client *gate.GatewayClient, applicationName string, dest int
 	return nil
 }
 
-func CreateApplication(client *gate.GatewayClient, applicationName, email string) error {
-
-	app := map[string]interface{}{
-		"instancePort": 80,
-		"name":         applicationName,
-		"email":        email,
-	}
+func CreateApplication(client *gate.GatewayClient, applicationName string, application interface{}) error {
 
 	createAppTask := map[string]interface{}{
-		"job":         []interface{}{map[string]interface{}{"type": "createApplication", "application": app}},
+		"job":         []interface{}{map[string]interface{}{"type": "createApplication", "application": application}},
 		"application": applicationName,
 		"description": fmt.Sprintf("Create Application: %s", applicationName),
 	}
