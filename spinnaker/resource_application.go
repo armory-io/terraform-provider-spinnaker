@@ -50,10 +50,9 @@ type applicationRead struct {
 func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	application := data.Get("application").(string)
-	email := data.Get("email").(string)
 
-	if err := api.CreateApplication(client, application, email); err != nil {
+	app := applicationFromResource(data)
+	if err := api.CreateApplication(client, app.Name, app); err != nil {
 		return err
 	}
 
