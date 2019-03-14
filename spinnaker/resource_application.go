@@ -62,9 +62,10 @@ func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) erro
 func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
+
 	applicationName := data.Get("application").(string)
-	var app applicationRead
-	if err := api.GetApplication(client, applicationName, &app); err != nil {
+	app := &applicationRead{}
+	if err := api.GetApplication(client, applicationName, app); err != nil {
 		return err
 	}
 
