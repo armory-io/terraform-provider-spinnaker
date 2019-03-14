@@ -13,10 +13,24 @@ func resourceApplication() *schema.Resource {
 			"application": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"email": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"instance_port": {
+				Type:         schema.TypeInt,
+				Required:     false,
+				Optional:     true,
+				Default:      80,
+			},
+			"permissions": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+				},
 			},
 		},
 		Create: resourceApplicationCreate,
