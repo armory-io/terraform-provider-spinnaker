@@ -9,12 +9,10 @@ func datasourcePipeline() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"application": {
 				Type:     schema.TypeString,
-				ForceNew: true,
 				Required: true,
 			},
 			"name": {
 				Type:     schema.TypeString,
-				ForceNew: true,
 				Required: true,
 			},
 			"pipeline": {
