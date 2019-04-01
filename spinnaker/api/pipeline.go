@@ -94,6 +94,19 @@ type Stage struct {
 			Protocol      string `json:"protocol,omitempty"`
 		} `json:"ports,omitempty"`
 	} `json:"containers,omitempty" mapstructure:"container"`
+	Preconditions []struct {
+		CloudProvider string `json:"cloudProvider,omitempty" mapstructure:"cloud_provider"`
+		Context       struct {
+			Cluster     string   `json:"cluster,omitempty"`
+			Comparison  string   `json:"comparison,omitempty"`
+			Credentials string   `json:"credentials,omitempty"`
+			Expected    int      `json:"expected,omitempty"`
+			Regions     []string `json:"regions,omitempty"`
+			Expression  string   `json:"expression,omitempty"`
+		} `json:"context,omitempty"`
+		FailPipeline bool   `json:"failPipeline" mapstructure:"fail_pipeline"`
+		Type         string `json:"type"`
+	} `json:"preconditions,omitempty" mapstructure:"precondition"`
 	DeferredInitialization *bool         `json:"deferredInitialization,omitempty" mapstructure:"deferred_initialization"`
 	DNSPolicy              string        `json:"dnsPolicy,omitempty" mapstructure:"dns_policy"`
 	Name                   string        `json:"name,omitempty"`
@@ -101,7 +114,7 @@ type Stage struct {
 	RefID                  string        `json:"refId,omitempty" mapstructure:"ref_id"`
 	RequisiteStageRefIds   []interface{} `json:"requisiteStageRefIds,omitempty" mapstructure:"requisite_stage_refids"`
 	Type                   string        `json:"type,omitempty"`
-	StatusUrlResolution    string        `json:"statusUrlResolution,omitempty" mapstructure:"status_url_resolution"`
+	StatusURLResolution    string        `json:"statusUrlResolution,omitempty" mapstructure:"status_url_resolution"`
 	WaitTime               int           `json:"waitTime,omitempty" mapstructure:"wait_time"`
 	WaitForCompletion      bool          `json:"waitForCompletion,omitempty" mapstructure:"wait_for_completion"`
 }

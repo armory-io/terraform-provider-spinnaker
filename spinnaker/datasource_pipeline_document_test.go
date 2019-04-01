@@ -41,6 +41,7 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 		".pipeline.stage.stageenabled.type", ".pipeline.stage.variables", ".pipeline.stage.variables.key",
 		".pipeline.stage.variables.value", ".pipeline.source_json", ".pipeline.override_json", ".pipeline.stage.container.envvars.name",
 		".pipeline.limit_concurrent", ".pipeline.parallel", ".pipeline.stage.deferred_initialization", ".pipeline.wait",
+		".pipeline.stage.precondition.context",
 	}
 
 	// transofrm some of the fields to make comparision more accurate.
@@ -48,12 +49,18 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 	delete(schemas, ".pipeline.config")
 
 	// some of the fields have different type. In struct representation
-	// they will have more likely `struct` type, in schema either map or slice
+	// they will have more likely `struct` type, in schema either map or slice,
+	// more rare bool ==> ptr mapping
 	assertEqual(t, schemas[".pipeline.stage.container.env"], "map")
 	assertEqual(t, schemas[".pipeline.stage.judgment_inputs"], "slice")
 	assertEqual(t, schemas[".pipeline.stage.container.image"], "map")
 	assertEqual(t, schemas[".pipeline.stage.stage_enabled"], "map")
 	assertEqual(t, schemas[".pipeline.stage.variables"], "map")
+	assertEqual(t, schemas[".pipeline.limit_concurrent"], "bool")
+	assertEqual(t, schemas[".pipeline.parallel"], "bool")
+	assertEqual(t, schemas[".pipeline.stage.deferred_initialization"], "bool")
+	assertEqual(t, schemas[".pipeline.wait"], "bool")
+	assertEqual(t, schemas[".pipeline.stage.precondition.context"], "map")
 
 	assertEqual(t, tags[".pipeline.stage.container.envvars"], "slice")
 	assertEqual(t, tags[".pipeline.stage.container.envvars.name"], "string")
@@ -71,6 +78,7 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 	assertEqual(t, tags[".pipeline.parallel"], "ptr")
 	assertEqual(t, tags[".pipeline.stage.deferred_initialization"], "ptr")
 	assertEqual(t, tags[".pipeline.wait"], "ptr")
+	assertEqual(t, tags[".pipeline.stage.precondition.context"], "struct")
 	// cleanup different values and make assertion
 	for _, skip := range skipFields {
 		delete(schemas, skip)

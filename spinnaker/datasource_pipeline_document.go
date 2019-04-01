@@ -144,6 +144,61 @@ func datasourcePipelineDocument() *schema.Resource {
 							Type:     schema.TypeMap,
 							Optional: true,
 						},
+						"precondition": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"cloud_provider": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"fail_pipeline": {
+										Type:     schema.TypeBool,
+										Optional: true,
+									},
+									"type": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"context": {
+										Type:     schema.TypeMap,
+										Optional: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"cluster": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"comparison": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"credentials": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"expression": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"expected": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"regions": {
+													Type:     schema.TypeList,
+													Optional: true,
+													Elem: &schema.Schema{
+														Type: schema.TypeString,
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 						"container": {
 							Type:     schema.TypeList,
 							Optional: true,
