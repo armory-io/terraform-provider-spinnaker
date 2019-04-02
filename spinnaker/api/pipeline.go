@@ -192,31 +192,3 @@ func DeletePipeline(client *gate.GatewayClient, applicationName, pipelineName st
 
 	return nil
 }
-
-func (oldDoc *PipelineDocument) Merge(newDoc *PipelineDocument) {
-	// Update some fields of oldDoc to match newDoc now
-	if newDoc.AppConfig != nil {
-		oldDoc.AppConfig = newDoc.AppConfig
-	}
-	if newDoc.Description != "" {
-		oldDoc.Description = newDoc.Description
-	}
-	if newDoc.ExecutionEngine != "" {
-		oldDoc.ExecutionEngine = newDoc.ExecutionEngine
-	}
-	if newDoc.Parallel != nil {
-		oldDoc.Parallel = newDoc.Parallel
-	}
-	if newDoc.LimitConcurrent != nil {
-		oldDoc.LimitConcurrent = newDoc.LimitConcurrent
-	}
-	if newDoc.KeepWaitingPipelines != nil {
-		oldDoc.KeepWaitingPipelines = newDoc.KeepWaitingPipelines
-	}
-	if newDoc.Parameters != nil {
-		oldDoc.Parameters = append(oldDoc.Parameters, newDoc.Parameters...)
-	}
-	if newDoc.Stages != nil {
-		oldDoc.Stages = append(oldDoc.Stages, newDoc.Stages...)
-	}
-}
