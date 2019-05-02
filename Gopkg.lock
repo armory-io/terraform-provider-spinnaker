@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:4d6f036ea3fe636bcb2e89850bcdc62a771354e157cd51b8b22a2de8562bf663"
+  name = "cloud.google.com/go"
+  packages = ["compute/metadata"]
+  pruneopts = "UT"
+  revision = "fcb9a2d5f791d07be64506ab54434de65989d370"
+  version = "v0.37.4"
+
+[[projects]]
   digest = "1:dc2ba13235a4c8f80a40599575a3f10acb4736cb372f1a68b88333c06564471d"
   name = "github.com/agext/levenshtein"
   packages = ["."]
@@ -401,7 +409,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:54d7ec0573e05493ec88119927a7de22404a7d800fe0bcd94acf589b0de0590e"
+  digest = "1:82a07f64fd9a0a6147392afabff000591785e10fca3860861788d3a378d05df4"
   name = "github.com/spinnaker/spin"
   packages = [
     "cmd/gateclient",
@@ -409,14 +417,16 @@
     "config",
     "config/auth",
     "config/auth/basic",
+    "config/auth/iap",
     "config/auth/oauth2",
     "config/auth/x509",
     "gateapi",
     "util",
+    "util/execcmd",
     "version",
   ]
   pruneopts = "UT"
-  revision = "fe23fcc28d971dc29ca2d40426d4126395dae252"
+  revision = "dc900bc5b869e8d563bae25faf14826174576b2b"
 
 [[projects]]
   digest = "1:db345c377984d0907323c09a9b17f11d995a59649fd38f909727df358b5f9020"
@@ -484,11 +494,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5276e08fe6a1dfdb65b4f46a2e5d5c9e00be6e499105e441049c3c04a0c83b36"
+  digest = "1:23443edff0740e348959763085df98400dcfd85528d7771bb0ce9f5f2754ff4a"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
+    "google",
     "internal",
+    "jws",
+    "jwt",
   ]
   pruneopts = "UT"
   revision = "d668ce993890a79bda886613ee587a69dd5da7a6"
@@ -525,13 +538,16 @@
   version = "v0.3.0"
 
 [[projects]]
-  digest = "1:08206298775e5b462e6c0333f4471b44e63f1a70e42952b6ede4ecc9572281eb"
+  digest = "1:d2a8db567a76203e3b41c1f632d86485ffd57f8e650a0d1b19d240671c2fddd7"
   name = "google.golang.org/appengine"
   packages = [
+    ".",
     "internal",
+    "internal/app_identity",
     "internal/base",
     "internal/datastore",
     "internal/log",
+    "internal/modules",
     "internal/remote_api",
     "internal/urlfetch",
     "urlfetch",
