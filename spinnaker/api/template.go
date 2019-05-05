@@ -18,7 +18,7 @@ func CreatePipelineTemplate(client *gate.GatewayClient, template interface{}) er
 		return err
 	}
 
-	if resp.StatusCode != http.StatusAccepted {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
 		return fmt.Errorf("Encountered an error saving template, status code: %d\n", resp.StatusCode)
 	}
 
