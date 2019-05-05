@@ -5,6 +5,7 @@ import (
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 )
 
 func resourceApplication() *schema.Resource {
@@ -13,10 +14,26 @@ func resourceApplication() *schema.Resource {
 			"application": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"email": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"instance_port": {
+				Type:         schema.TypeInt,
+				Required:     false,
+				Optional:     true,
+				Default:      80,
+				ValidateFunc: validation.IntBetween(1, 65535),
+			},
+			"permissions": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringInSlice([]string{"read", "write", "read_write"}, false),
+				},
 			},
 		},
 		Create: resourceApplicationCreate,
@@ -27,20 +44,32 @@ func resourceApplication() *schema.Resource {
 	}
 }
 
+// application represents the Gate API schema
+//
+// HINT: to extend this schema have a look at the output
+// of the spin (https://github.com/spinnaker/spin)
+// application get command.
+type application struct {
+	Name         string              `json:"name"`
+	Email        string              `json:"email"`
+	InstancePort int                 `json:"instancePort"`
+	Permissions  map[string][]string `json:"permissions,omitempty"`
+}
+
+// applicationRead represents the Gate API schema of an application
+// get request. The relevenat part of the schema is identical with
+// the application struct, it's just wrapped in an attributes field.
 type applicationRead struct {
-	Name       string `json:"name"`
-	Attributes struct {
-		Email string `json:"email"`
-	} `json:"attributes"`
+	Name       string       `json:"name"`
+	Attributes *application `json:"attributes"`
 }
 
 func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	application := data.Get("application").(string)
-	email := data.Get("email").(string)
 
-	if err := api.CreateApplication(client, application, email); err != nil {
+	app := applicationFromResource(data)
+	if err := api.CreateApplication(client, app.Name, app); err != nil {
 		return err
 	}
 
@@ -50,9 +79,10 @@ func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) erro
 func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
+
 	applicationName := data.Get("application").(string)
-	var app applicationRead
-	if err := api.GetApplication(client, applicationName, &app); err != nil {
+	app := &applicationRead{}
+	if err := api.GetApplication(client, applicationName, app); err != nil {
 		return err
 	}
 
@@ -60,7 +90,16 @@ func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceApplicationUpdate(data *schema.ResourceData, meta interface{}) error {
-	return nil
+	// the application update in spinnaker is an simple upsert
+	clientConfig := meta.(gateConfig)
+	client := clientConfig.client
+
+	app := applicationFromResource(data)
+	if err := api.CreateApplication(client, app.Name, app); err != nil {
+		return err
+	}
+
+	return resourceApplicationRead(data, meta)
 }
 
 func resourceApplicationDelete(data *schema.ResourceData, meta interface{}) error {
@@ -92,7 +131,55 @@ func resourceApplicationExists(data *schema.ResourceData, meta interface{}) (boo
 	return true, nil
 }
 
-func readApplication(data *schema.ResourceData, application applicationRead) error {
+func applicationFromResource(data *schema.ResourceData) *application {
+	app := &application{
+		Name:         data.Get("application").(string),
+		Email:        data.Get("email").(string),
+		InstancePort: data.Get("instance_port").(int),
+		Permissions:  make(map[string][]string),
+	}
+
+	// convert {"team_name": "read_write"} to {"READ": ["team_name"], "WRITE": ["team_name"]}
+	// for the spinnaker API
+	readPerms := []string{}
+	writePerms := []string{}
+	for team, permI := range data.Get("permissions").(map[string]interface{}) {
+		perm := permI.(string)
+		if strings.HasPrefix(perm, "read") {
+			readPerms = append(readPerms, team)
+		}
+		if strings.HasSuffix(perm, "write") {
+			writePerms = append(writePerms, team)
+		}
+
+	}
+	app.Permissions["READ"] = readPerms
+	app.Permissions["WRITE"] = writePerms
+
+	return app
+}
+
+func readApplication(data *schema.ResourceData, application *applicationRead) error {
 	data.SetId(application.Name)
+	data.Set("name", application.Name)
+	data.Set("email", application.Attributes.Email)
+	data.Set("instance_port", application.Attributes.InstancePort)
+
+	// convert {"READ": ["team_name"], "WRITE": ["team_name"]} to {"team_name": "read_write"}
+	// for the spinnaker API
+	perms := make(map[string]string)
+	for _, team := range application.Attributes.Permissions["READ"] {
+		perms[team] = "read"
+	}
+	for _, team := range application.Attributes.Permissions["WRITE"] {
+		perm, ok := perms[team]
+		if ok {
+			// perms contains "read", append undescore to create "read_write"
+			perm += "_"
+		}
+		perm += "write"
+		perms[team] = perm
+	}
+	data.Set("permissions", perms)
 	return nil
 }
