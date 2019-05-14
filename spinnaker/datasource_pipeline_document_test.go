@@ -33,7 +33,7 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 	// parametersDecodeDocument() and stageDecodeDocument(). Other fields are just computed
 	// and not present in the either struct or Schema
 	skipFields := []string{
-		".pipeline", ".pipeline.json", ".pipeline.parameter.hasoptions", ".pipeline.stage.container.env",
+		".pipeline", ".pipeline.stage", ".pipeline.json", ".pipeline.parameter.hasoptions", ".pipeline.stage.container.env",
 		".pipeline.stage.judgment_inputs", ".pipeline.stage.container.image", ".pipeline.stage.stage_enabled",
 		".pipeline.stage.variables", ".pipeline.stage.container.envvars", "pipeline.stage.container.envvars.name",
 		".pipeline.stage.container.envvars.value", ".pipeline.stage.container.image", ".pipeline.stage.judgmentinputs",
@@ -41,7 +41,14 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 		".pipeline.stage.stageenabled.type", ".pipeline.stage.variables", ".pipeline.stage.variables.key",
 		".pipeline.stage.variables.value", ".pipeline.source_json", ".pipeline.override_json", ".pipeline.stage.container.envvars.name",
 		".pipeline.limit_concurrent", ".pipeline.parallel", ".pipeline.stage.deferred_initialization", ".pipeline.wait",
-		".pipeline.stage.precondition.context",
+		".pipeline.stage.precondition.context", ".pipeline.stage.container.limits", ".pipeline.stage.notification.message",
+		".pipeline.stage.notification.message.stage_completed", ".pipeline.stage.notification.message.stage_failed",
+		".pipeline.stage.notification.message.stage_starting", ".pipeline.stage.notification.message.stagecompleted",
+		".pipeline.stage.notification.message.stagecompleted.text", ".pipeline.stage.notification.message.stagefailed",
+		".pipeline.stage.notification.message.stagefailed.text", ".pipeline.stage.notification.message.stagestarting",
+		".pipeline.stage.notification.message.stagestarting.text", ".pipeline.stage.sendnotification", ".pipeline.parameter.options.value",
+		".pipeline.stage.complete_other_branches_then_fail", ".pipeline.stage.continue_pipeline", ".pipeline.stage.fail_on_failed_expression",
+		".pipeline.stage.fail_pipeline", ".pipeline.stage.manifests", ".pipeline.stage.manifest", ".pipeline.stage.alias",
 	}
 
 	// transofrm some of the fields to make comparision more accurate.
@@ -61,6 +68,8 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 	assertEqual(t, schemas[".pipeline.stage.deferred_initialization"], "bool")
 	assertEqual(t, schemas[".pipeline.wait"], "bool")
 	assertEqual(t, schemas[".pipeline.stage.precondition.context"], "map")
+	assertEqual(t, schemas[".pipeline.stage.container.limits"], "map")
+	assertEqual(t, schemas[".pipeline.stage.notification.message"], "map")
 
 	assertEqual(t, tags[".pipeline.stage.container.envvars"], "slice")
 	assertEqual(t, tags[".pipeline.stage.container.envvars.name"], "string")
@@ -76,9 +85,19 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 	assertEqual(t, tags[".pipeline.stage.variables.value"], "string")
 	assertEqual(t, tags[".pipeline.limit_concurrent"], "ptr")
 	assertEqual(t, tags[".pipeline.parallel"], "ptr")
-	assertEqual(t, tags[".pipeline.stage.deferred_initialization"], "ptr")
+	assertEqual(t, tags[".pipeline.stage.deferred_initialization"], "bool")
 	assertEqual(t, tags[".pipeline.wait"], "ptr")
 	assertEqual(t, tags[".pipeline.stage.precondition.context"], "struct")
+	assertEqual(t, tags[".pipeline.stage.container.limits"], "struct")
+	assertEqual(t, tags[".pipeline.stage.notification.message"], "struct")
+	assertEqual(t, tags[".pipeline.stage.sendnotification"], "bool")
+	assertEqual(t, tags[".pipeline.parameter.options.value"], "string")
+	assertEqual(t, tags[".pipeline.stage.complete_other_branches_then_fail"], "ptr")
+	assertEqual(t, tags[".pipeline.stage.continue_pipeline"], "ptr")
+	assertEqual(t, tags[".pipeline.stage.fail_on_failed_expression"], "ptr")
+	assertEqual(t, tags[".pipeline.stage.fail_pipeline"], "ptr")
+	assertEqual(t, tags[".pipeline.stage.manifests"], "slice")
+
 	// cleanup different values and make assertion
 	for _, skip := range skipFields {
 		delete(schemas, skip)
@@ -131,11 +150,12 @@ func GetFieldTagsFromStruct(prefix string, source interface{}, tagName string, t
 				}
 
 				key = fmt.Sprintf("%s.%s", prefix, tag)
-				tags[key] = field.Type.Kind().String()
 			} else {
 				key = fmt.Sprintf("%s.%s", prefix, strings.ToLower(field.Name))
-				tags[key] = field.Type.Kind().String()
 			}
+
+			// get rid of `squash` tag
+			tags[strings.Replace(key, ".,squash", "", -1)] = field.Type.Kind().String()
 
 			switch field.Type.Kind() {
 			case reflect.Struct:
