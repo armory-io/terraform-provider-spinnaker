@@ -41,7 +41,7 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 		".pipeline.stage.stageenabled.type", ".pipeline.stage.variables", ".pipeline.stage.variables.key",
 		".pipeline.stage.variables.value", ".pipeline.source_json", ".pipeline.override_json", ".pipeline.stage.container.envvars.name",
 		".pipeline.limit_concurrent", ".pipeline.parallel", ".pipeline.stage.deferred_initialization", ".pipeline.wait",
-		".pipeline.stage.precondition.context",
+		".pipeline.stage.precondition.context", ".pipeline.parameter.options.value",
 	}
 
 	// transofrm some of the fields to make comparision more accurate.
@@ -74,6 +74,7 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 	assertEqual(t, tags[".pipeline.stage.variables"], "slice")
 	assertEqual(t, tags[".pipeline.stage.variables.key"], "string")
 	assertEqual(t, tags[".pipeline.stage.variables.value"], "string")
+	assertEqual(t, tags[".pipeline.parameter.options.value"], "string")
 	assertEqual(t, tags[".pipeline.limit_concurrent"], "ptr")
 	assertEqual(t, tags[".pipeline.parallel"], "ptr")
 	assertEqual(t, tags[".pipeline.stage.deferred_initialization"], "ptr")

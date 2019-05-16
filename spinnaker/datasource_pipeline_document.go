@@ -437,7 +437,7 @@ func parametersDecodeDocument(parameters interface{}) []*api.PipelineParameter {
 		if opts := fparam["options"].([]interface{}); len(opts) > 0 {
 			pm.HasOptions = true
 			for _, opt := range opts {
-				pm.Options = append(pm.Options, opt.(string))
+				pm.Options = append(pm.Options, &api.Options{Value: opt.(string)})
 			}
 		}
 		params[i] = pm

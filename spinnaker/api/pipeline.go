@@ -28,13 +28,17 @@ type PipelineDocument struct {
 }
 
 type PipelineParameter struct {
-	Description string   `json:"description,omitempty"`
-	Default     string   `json:"default,omitempty"`
-	Name        string   `json:"name"`
-	Required    bool     `json:"required"`
-	HasOptions  bool     `json:"hasOptions"`
-	Label       string   `json:"label,omitempty"`
-	Options     []string `json:"options,omitempty"`
+	Description string     `json:"description,omitempty"`
+	Default     string     `json:"default,omitempty"`
+	Name        string     `json:"name"`
+	Required    bool       `json:"required"`
+	HasOptions  bool       `json:"hasOptions"`
+	Options     []*Options `json:"options,omitempty"`
+	Label       string     `json:"label,omitempty"`
+}
+
+type Options struct {
+	Value string `json:"value"`
 }
 
 type Pipeline struct {
