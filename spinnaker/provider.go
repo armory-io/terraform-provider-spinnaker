@@ -27,6 +27,12 @@ func Provider() *schema.Provider {
 				Description: "Ignore certificate errors from Gate",
 				Default:     false,
 			},
+			"default_headers": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Headers to be passed to the gate endpoint by the client on each request",
+				Default:     "",
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"spinnaker_application":              resourceApplication(),
@@ -50,6 +56,7 @@ func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
 	server := data.Get("server").(string)
 	config := data.Get("config").(string)
 	ignoreCertErrors := data.Get("ignore_cert_errors").(bool)
+	defaultHeaders := data.Get("default_headers").(string)
 
 	flags := pflag.NewFlagSet("default", 1)
 	flags.String("gate-endpoint", server, "")
@@ -58,6 +65,7 @@ func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
 	flags.Bool("no-color", true, "")
 	flags.String("output", "", "")
 	flags.String("config", config, "")
+	flags.String("default-headers", defaultHeaders, "")
 	// flags.Parse()
 	client, err := gate.NewGateClient(flags)
 	if err != nil {
