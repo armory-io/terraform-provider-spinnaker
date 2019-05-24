@@ -409,7 +409,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:82a07f64fd9a0a6147392afabff000591785e10fca3860861788d3a378d05df4"
+  digest = "1:43a64bc410fac285240282d6880f3eb9081cd1aa775c6044f8a21ffec29c58c1"
   name = "github.com/spinnaker/spin"
   packages = [
     "cmd/gateclient",
@@ -417,6 +417,7 @@
     "config",
     "config/auth",
     "config/auth/basic",
+    "config/auth/googleserviceaccount",
     "config/auth/iap",
     "config/auth/oauth2",
     "config/auth/x509",
@@ -426,7 +427,7 @@
     "version",
   ]
   pruneopts = "UT"
-  revision = "dc900bc5b869e8d563bae25faf14826174576b2b"
+  revision = "0d47b8bdc7e75cc1df033944baa99a9678ac463c"
 
 [[projects]]
   digest = "1:db345c377984d0907323c09a9b17f11d995a59649fd38f909727df358b5f9020"
