@@ -31,13 +31,12 @@ resource "spinnaker_pipeline" "terraform_example" {
 
 #### Build from Source
 
-_Requires Go and [Dep](https://github.com/golang/dep#installation) be installed on the system._
+_Requires Go to be installed on the system._
 
 ```
-$ go get github.com/armory-io/terraform-provider-spinnaker
+$ env GO111MODULE=on go get github.com/armory-io/terraform-provider-spinnaker
 $ cd $GOPATH/src/github.com/armory-io/terraform-provider-spinnaker
-$ dep ensure
-$ go build
+$ env GO111MODULE=on go build
 ```
 
 #### Installing 3rd Party Plugins
