@@ -19,7 +19,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Path to Gate config file",
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("SPINNAKER_CONFIG_PATH", nil),
 			},
 			"ignore_cert_errors": {
 				Type:        schema.TypeBool,
@@ -49,12 +49,12 @@ type gateConfig struct {
 func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
 	server := data.Get("server").(string)
 	config := data.Get("config").(string)
-	ignore_cert_errors := data.Get("ignore_cert_errors").(bool)
+	ignoreCertErrors := data.Get("ignore_cert_errors").(bool)
 
 	flags := pflag.NewFlagSet("default", 1)
 	flags.String("gate-endpoint", server, "")
 	flags.Bool("quiet", false, "")
-	flags.Bool("insecure", ignore_cert_errors, "")
+	flags.Bool("insecure", ignoreCertErrors, "")
 	flags.Bool("no-color", true, "")
 	flags.String("output", "", "")
 	flags.String("config", config, "")

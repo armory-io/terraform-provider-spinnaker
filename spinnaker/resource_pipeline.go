@@ -43,7 +43,7 @@ func resourcePipeline() *schema.Resource {
 type pipelineRead struct {
 	Name        string `json:"name"`
 	Application string `json:"application"`
-	Id          string `json:"id"`
+	ID          string `json:"id"`
 }
 
 func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
@@ -90,11 +90,11 @@ func resourcePipelineRead(data *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Could not set pipeline for pipeline %s: %s", pipelineName, err)
 	}
 
-	err = data.Set("pipeline_id", p.Id)
+	err = data.Set("pipeline_id", p.ID)
 	if err != nil {
 		return fmt.Errorf("Could not set pipeline_id for pipeline %s: %s", pipelineName, err)
 	}
-	data.SetId(p.Id)
+	data.SetId(p.ID)
 
 	return nil
 }
