@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/mitchellh/mapstructure"
-	gate "github.com/spinnaker/spin/cmd/gateclient"
+	gate "github.com/estebangarcia/spin/gateclient"
 )
 
 const (

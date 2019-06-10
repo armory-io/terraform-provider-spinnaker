@@ -1,9 +1,11 @@
 package spinnaker
 
 import (
+	"log"
+
+	spin_config "github.com/estebangarcia/spin/config"
+	gate "github.com/estebangarcia/spin/gateclient"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/spf13/pflag"
-	gate "github.com/spinnaker/spin/cmd/gateclient"
 )
 
 func Provider() *schema.Provider {
@@ -11,9 +13,9 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"server": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "URL for Gate",
-				DefaultFunc: schema.EnvDefaultFunc("GATE_URL", nil),
+				DefaultFunc: schema.EnvDefaultFunc("SPIN_GATE_ENDPOINT", nil),
 			},
 			"config": {
 				Type:        schema.TypeString,
@@ -49,17 +51,30 @@ type gateConfig struct {
 func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
 	server := data.Get("server").(string)
 	config := data.Get("config").(string)
-	ignore_cert_errors := data.Get("ignore_cert_errors").(bool)
+	ignoreCertErrors := data.Get("ignore_cert_errors").(bool)
 
-	flags := pflag.NewFlagSet("default", 1)
-	flags.String("gate-endpoint", server, "")
-	flags.Bool("quiet", false, "")
-	flags.Bool("insecure", ignore_cert_errors, "")
-	flags.Bool("no-color", true, "")
-	flags.String("output", "", "")
-	flags.String("config", config, "")
-	// flags.Parse()
-	client, err := gate.NewGateClient(flags)
+	var cfg spin_config.Config
+	var err error
+
+	if config != "" {
+		cfg, err = spin_config.ParseFromFile(config)
+	} else {
+		cfg, err = spin_config.Parse()
+	}
+
+	cfg.Gate.Insecure = ignoreCertErrors
+
+	if server != "" {
+		cfg.Gate.Endpoint = server
+	}
+
+	log.Printf("%v", cfg)
+
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := gate.NewGateClientWithConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
