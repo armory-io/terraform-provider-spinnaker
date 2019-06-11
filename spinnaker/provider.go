@@ -52,6 +52,7 @@ func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
 	ignoreCertErrors := data.Get("ignore_cert_errors").(bool)
 
 	flags := pflag.NewFlagSet("default", 1)
+	flags.String("default-headers", "", "")
 	flags.String("gate-endpoint", server, "")
 	flags.Bool("quiet", false, "")
 	flags.Bool("insecure", ignoreCertErrors, "")
