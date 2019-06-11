@@ -9,6 +9,5 @@ require (
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/spf13/pflag v1.0.3
-	github.com/spinnaker/spin v0.0.0-20190418143406-dc900bc5b869
-	k8s.io/client-go v10.0.0+incompatible // indirect
+	github.com/spinnaker/spin v0.0.0-20190530150642-535d2dc1b985
 )
