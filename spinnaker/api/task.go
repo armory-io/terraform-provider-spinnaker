@@ -7,7 +7,7 @@ import (
 	gate "github.com/spinnaker/spin/cmd/gateclient"
 )
 
-func enableApplicationCanary(client *gate.GatewayClient, applicationName string) error {
+func EnableApplicationCanary(client *gate.GatewayClient, applicationName string) error {
 	jobSpec := map[string]interface{}{
 		"type": "updateApplication",
 		"application": map[string]interface{}{

@@ -24,6 +24,7 @@ func TestAccSpinnakerApplication_basic(t *testing.T) {
 					testAccCheckApplicationExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "application", rName),
 					resource.TestCheckResourceAttr(resourceName, "email", "acceptance@test.com"),
+					resource.TestCheckResourceAttr(resourceName, "canary", "true"),
 				),
 			},
 		},
@@ -67,6 +68,7 @@ func testAccSpinnakerApplication_basic(rName string) string {
 resource "spinnaker_application" "test" {
 	application  = %q
 	email = "acceptance@test.com"
+	canary = true
 }
 `, rName)
 }
