@@ -97,6 +97,33 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 	return jsonMap, nil
 }
 
+func GetPipelines(client *gate.GatewayClient, applicationName string, dest interface{}) ([]interface{}, error) {
+	data, resp, err := client.ApplicationControllerApi.GetPipelineConfigsForApplicationUsingGET(client.Context, applicationName)
+
+	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			return data, fmt.Errorf("%s", ErrCodeNoSuchEntityException)
+		}
+		return data, fmt.Errorf("Encountered an error getting pipelines for application %s, %s\n", applicationName, err.Error())
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return data, fmt.Errorf("Encountered an error getting pipelines in application %s, status code: %d\n",
+			applicationName,
+			resp.StatusCode)
+	}
+
+	if data == nil {
+		return data, fmt.Errorf(ErrCodeNoSuchEntityException)
+	}
+
+	if err := mapstructure.Decode(data, dest); err != nil {
+		return data, err
+	}
+
+	return data, nil
+}
+
 func UpdatePipeline(client *gate.GatewayClient, pipelineID string, pipeline interface{}) error {
 	_, resp, err := client.PipelineControllerApi.UpdatePipelineUsingPUT(client.Context, pipelineID, pipeline)
 
