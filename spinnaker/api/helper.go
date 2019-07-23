@@ -40,7 +40,7 @@ func (oldDoc *PipelineDocument) Merge(newDoc *PipelineDocument) {
 		for _, newStage := range newDoc.Stages {
 			found := false
 			for idx, oldStage := range oldDoc.Stages {
-				if oldStage.Name == newStage.Name {
+				if oldStage.RefID == newStage.RefID {
 					oldDoc.Stages[idx] = newStage
 					found = true
 					continue
