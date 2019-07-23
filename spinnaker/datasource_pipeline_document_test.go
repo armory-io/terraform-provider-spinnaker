@@ -2,11 +2,13 @@ package spinnaker
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -28,58 +30,84 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 	GetFieldTagsFromStruct("", api.PipelineDocument{}, "mapstructure", tags)
 
 	// some of the fields have different format. The reason for that is to simplify
-	// terraform definition of the reasurce. Because of that schema.Resource does not match
+	// terraform definition of the resource. Because of that schema.Resource does not match
 	// 1:1 the json format. There is a transformation performed in:
 	// parametersDecodeDocument() and stageDecodeDocument(). Other fields are just computed
 	// and not present in the either struct or Schema
 	skipFields := []string{
-		".pipeline", ".pipeline.json", ".pipeline.parameter.hasoptions", ".pipeline.stage.container.env",
-		".pipeline.stage.judgment_inputs", ".pipeline.stage.container.image", ".pipeline.stage.stage_enabled",
-		".pipeline.stage.variables", ".pipeline.stage.container.envvars", "pipeline.stage.container.envvars.name",
-		".pipeline.stage.container.envvars.value", ".pipeline.stage.container.image", ".pipeline.stage.judgmentinputs",
-		".pipeline.stage.judgmentinputs.value", ".pipeline.stage.stageenabled", ".pipeline.stage.stageenabled.expression",
-		".pipeline.stage.stageenabled.type", ".pipeline.stage.variables", ".pipeline.stage.variables.key",
-		".pipeline.stage.variables.value", ".pipeline.source_json", ".pipeline.override_json", ".pipeline.stage.container.envvars.name",
-		".pipeline.limit_concurrent", ".pipeline.parallel", ".pipeline.stage.deferred_initialization", ".pipeline.wait",
-		".pipeline.stage.precondition.context", ".pipeline.parameter.options.value",
+		".pipeline", ".pipeline.config", ".pipeline.stage", ".pipeline.json", ".pipeline.override_json", ".pipeline.parameter.hasoptions",
+		".pipeline.parameter.options.value", ".pipeline.source_json", ".pipeline.stage.alias", ".pipeline.stage.app", ".pipeline.stage.container.env",
+		".pipeline.stage.container.envvars", ".pipeline.stage.container.envvars.name", ".pipeline.stage.container.envvars.value", ".pipeline.stage.judgment_inputs",
+		".pipeline.stage.judgmentinputs", ".pipeline.stage.judgmentinputs.value", ".pipeline.stage.manifestname", ".pipeline.stage.manifests",
+		".pipeline.stage.notification.message.stage_completed", ".pipeline.stage.notification.message.stage_failed", ".pipeline.stage.notification.message.stage_starting",
+		".pipeline.stage.notification.message.stagecompleted", ".pipeline.stage.notification.message.stagecompleted.text", ".pipeline.stage.notification.message.stagefailed",
+		".pipeline.stage.notification.message.stagefailed.text", ".pipeline.stage.notification.message.stagestarting", ".pipeline.stage.notification.message.stagestarting.text",
+		".pipeline.stage.options.merge_strategy", ".pipeline.stage.options.mergestrategy", ".pipeline.stage.patch_body", ".pipeline.stage.patchbody", ".pipeline.stage.sendnotification",
+		".pipeline.stage.stage_enabled", ".pipeline.stage.stage_enabled.expression", ".pipeline.stage.stageenabled", ".pipeline.stage.variables.key", ".pipeline.stage.variables.value",
 	}
 
-	// transofrm some of the fields to make comparision more accurate.
+	// // transofrm some of the fields to make comparision more accurate.
 	schemas[".config"] = schemas[".pipeline.config"]
-	delete(schemas, ".pipeline.config")
 
 	// some of the fields have different type. In struct representation
 	// they will have more likely `struct` type, in schema either map or slice,
 	// more rare bool ==> ptr mapping
-	assertEqual(t, schemas[".pipeline.stage.container.env"], "map")
-	assertEqual(t, schemas[".pipeline.stage.judgment_inputs"], "slice")
-	assertEqual(t, schemas[".pipeline.stage.container.image"], "map")
-	assertEqual(t, schemas[".pipeline.stage.stage_enabled"], "map")
-	assertEqual(t, schemas[".pipeline.stage.variables"], "map")
-	assertEqual(t, schemas[".pipeline.limit_concurrent"], "bool")
-	assertEqual(t, schemas[".pipeline.parallel"], "bool")
-	assertEqual(t, schemas[".pipeline.stage.deferred_initialization"], "bool")
-	assertEqual(t, schemas[".pipeline.wait"], "bool")
-	assertEqual(t, schemas[".pipeline.stage.precondition.context"], "map")
-
-	assertEqual(t, tags[".pipeline.stage.container.envvars"], "slice")
-	assertEqual(t, tags[".pipeline.stage.container.envvars.name"], "string")
-	assertEqual(t, tags[".pipeline.stage.container.envvars.value"], "string")
-	assertEqual(t, tags[".pipeline.stage.container.image"], "struct")
-	assertEqual(t, tags[".pipeline.stage.judgmentinputs"], "slice")
-	assertEqual(t, tags[".pipeline.stage.judgmentinputs.value"], "string")
-	assertEqual(t, tags[".pipeline.stage.stageenabled"], "struct")
-	assertEqual(t, tags[".pipeline.stage.stageenabled.expression"], "string")
-	assertEqual(t, tags[".pipeline.stage.stageenabled.type"], "string")
-	assertEqual(t, tags[".pipeline.stage.variables"], "slice")
-	assertEqual(t, tags[".pipeline.stage.variables.key"], "string")
-	assertEqual(t, tags[".pipeline.stage.variables.value"], "string")
-	assertEqual(t, tags[".pipeline.parameter.options.value"], "string")
 	assertEqual(t, tags[".pipeline.limit_concurrent"], "ptr")
+	assertEqual(t, schemas[".pipeline.limit_concurrent"], "bool")
+	skipFields = append(skipFields, ".pipeline.limit_concurrent")
+
 	assertEqual(t, tags[".pipeline.parallel"], "ptr")
-	assertEqual(t, tags[".pipeline.stage.deferred_initialization"], "ptr")
-	assertEqual(t, tags[".pipeline.wait"], "ptr")
+	assertEqual(t, schemas[".pipeline.parallel"], "bool")
+	skipFields = append(skipFields, ".pipeline.parallel")
+
+	assertEqual(t, tags[".pipeline.stage.complete_other_branches_then_fail"], "ptr")
+	assertEqual(t, schemas[".pipeline.stage.complete_other_branches_then_fail"], "bool")
+	skipFields = append(skipFields, ".pipeline.stage.complete_other_branches_then_fail")
+
+	assertEqual(t, tags[".pipeline.stage.container.image"], "struct")
+	assertEqual(t, schemas[".pipeline.stage.container.image"], "map")
+	skipFields = append(skipFields, ".pipeline.stage.container.image")
+
+	assertEqual(t, tags[".pipeline.stage.container.limits"], "struct")
+	assertEqual(t, schemas[".pipeline.stage.container.limits"], "map")
+	skipFields = append(skipFields, ".pipeline.stage.container.limits")
+
+	assertEqual(t, tags[".pipeline.stage.continue_pipeline"], "ptr")
+	assertEqual(t, schemas[".pipeline.stage.continue_pipeline"], "bool")
+	skipFields = append(skipFields, ".pipeline.stage.continue_pipeline")
+
+	assertEqual(t, tags[".pipeline.stage.fail_on_failed_expression"], "ptr")
+	assertEqual(t, schemas[".pipeline.stage.fail_on_failed_expression"], "bool")
+	skipFields = append(skipFields, ".pipeline.stage.fail_on_failed_expression")
+
+	assertEqual(t, tags[".pipeline.stage.fail_pipeline"], "ptr")
+	assertEqual(t, schemas[".pipeline.stage.fail_pipeline"], "bool")
+	skipFields = append(skipFields, ".pipeline.stage.fail_pipeline")
+
+	assertEqual(t, tags[".pipeline.stage.manifest"], "map")
+	assertEqual(t, schemas[".pipeline.stage.manifest"], "string")
+	skipFields = append(skipFields, ".pipeline.stage.manifest")
+
+	assertEqual(t, tags[".pipeline.stage.notification.message"], "struct")
+	assertEqual(t, schemas[".pipeline.stage.notification.message"], "map")
+	skipFields = append(skipFields, ".pipeline.stage.notification.message")
+
+	assertEqual(t, tags[".pipeline.stage.options"], "struct")
+	assertEqual(t, schemas[".pipeline.stage.options"], "map")
+	skipFields = append(skipFields, ".pipeline.stage.options")
+
 	assertEqual(t, tags[".pipeline.stage.precondition.context"], "struct")
+	assertEqual(t, schemas[".pipeline.stage.precondition.context"], "map")
+	skipFields = append(skipFields, ".pipeline.stage.precondition.context")
+
+	assertEqual(t, tags[".pipeline.stage.variables"], "slice")
+	assertEqual(t, schemas[".pipeline.stage.variables"], "map")
+	skipFields = append(skipFields, ".pipeline.stage.variables")
+
+	assertEqual(t, tags[".pipeline.wait"], "ptr")
+	assertEqual(t, schemas[".pipeline.wait"], "bool")
+	skipFields = append(skipFields, ".pipeline.wait")
+
 	// cleanup different values and make assertion
 	for _, skip := range skipFields {
 		delete(schemas, skip)
@@ -88,6 +116,8 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 
 	// Final assertion
 	if !reflect.DeepEqual(tags, schemas) {
+		// For deeper investigation uncomment line below
+		log.Println(cmp.Diff(tags, schemas))
 		t.Fatal("PipelineDocument struct and data_source_spinnaker_pipeline_document do not match!")
 	}
 }
@@ -123,7 +153,7 @@ func GetFieldTagsFromStruct(prefix string, source interface{}, tagName string, t
 			var key string
 			if tag := field.Tag.Get(tagName); tag != "" {
 				// Some values are skipped by mapstructure since they have different type in Schema.Resource
-				// and in the struct. Most likely those are embeded structs with Key/Value fields.
+				// and in the struct. Most likely those are embedded structs with Key/Value fields.
 				// the reason for keeping that that way is to simplify the terraform definition and the same time
 				// keep compatibility with the json output generated for spinnaker
 				// affected fields are tagged with `mapstructure:"-"`
@@ -132,11 +162,12 @@ func GetFieldTagsFromStruct(prefix string, source interface{}, tagName string, t
 				}
 
 				key = fmt.Sprintf("%s.%s", prefix, tag)
-				tags[key] = field.Type.Kind().String()
 			} else {
 				key = fmt.Sprintf("%s.%s", prefix, strings.ToLower(field.Name))
-				tags[key] = field.Type.Kind().String()
 			}
+
+			// get rid of `squash` tag
+			tags[strings.Replace(key, ".,squash", "", -1)] = field.Type.Kind().String()
 
 			switch field.Type.Kind() {
 			case reflect.Struct:
