@@ -2,10 +2,12 @@ package spinnaker
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strconv"
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
+	"github.com/ghodss/yaml"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/mitchellh/mapstructure"
@@ -52,7 +54,7 @@ func datasourcePipelineDocument() *schema.Resource {
 				Optional: true,
 			},
 			"parameter": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -92,6 +94,10 @@ func datasourcePipelineDocument() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"timeout": {
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
 						"account": {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -108,10 +114,6 @@ func datasourcePipelineDocument() *schema.Resource {
 							Type:     schema.TypeMap,
 							Optional: true,
 						},
-						"clusters": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
 						"complete_other_branches_then_fail": {
 							Type:     schema.TypeBool,
 							Optional: true,
@@ -123,6 +125,7 @@ func datasourcePipelineDocument() *schema.Resource {
 						"fail_pipeline": {
 							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  true,
 						},
 						"fail_on_failed_expression": {
 							Type:     schema.TypeBool,
@@ -268,6 +271,14 @@ func datasourcePipelineDocument() *schema.Resource {
 													Type:     schema.TypeInt,
 													Optional: true,
 												},
+												"host": {
+													Type:     schema.TypeInt,
+													Optional: true,
+												},
+												"hostip": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"name": {
 													Type:     schema.TypeString,
 													Optional: true,
@@ -279,8 +290,60 @@ func datasourcePipelineDocument() *schema.Resource {
 											},
 										},
 									},
+									"limits": {
+										Type:     schema.TypeMap,
+										Optional: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"cpu": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"memory": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+											},
+										},
+									},
+									"volumes": {
+										Type:     schema.TypeList,
+										Optional: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"mount_path": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"name": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"read_only": {
+													Type:     schema.TypeBool,
+													Optional: true,
+												},
+												"sub_path": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+											},
+										},
+									},
 								},
 							},
+						},
+						"node_selector": {
+							Type:     schema.TypeMap,
+							Optional: true,
+						},
+						"service_account_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"labels": {
+							Type:     schema.TypeMap,
+							Optional: true,
 						},
 						"deferred_initialization": {
 							Type:     schema.TypeBool,
@@ -297,14 +360,15 @@ func datasourcePipelineDocument() *schema.Resource {
 						"namespace": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Default:  "default",
 						},
-						"ref_id": {
+						"id": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 						"type": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Required: true,
 						},
 						"wait_for_completion": {
 							Type:     schema.TypeBool,
@@ -322,7 +386,7 @@ func datasourcePipelineDocument() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						"requisite_stage_refids": {
+						"depends_on": {
 							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Schema{
@@ -333,12 +397,134 @@ func datasourcePipelineDocument() *schema.Resource {
 							Type:     schema.TypeInt,
 							Optional: true,
 						},
-						"status_url_resolution": {
+						"skip_text": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 						"stage_enabled": {
 							Type:     schema.TypeMap,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"expression": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+								},
+							},
+						},
+						"notification": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"address": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"cc": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"level": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"type": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"when": {
+										Type:     schema.TypeList,
+										Optional: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"message": {
+										Type:     schema.TypeMap,
+										Optional: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"stage_completed": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"stage_failed": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"stage_starting": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"manifest_artifact_account": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"moniker": {
+							Type:     schema.TypeMap,
+							Optional: true,
+						},
+						"source": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(string)
+								if val != "text" && val != "artifact" {
+									errs = append(errs, fmt.Errorf("%q must be set to either `text` or `artifact`, got: %s", key, v))
+								}
+								return
+							},
+						},
+						"skip_expression_evaluation": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"consume_artifact_source": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"property_file": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"manifest": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"location": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"mode": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"options": {
+							Type:     schema.TypeMap,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"merge_strategy": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"record": {
+										Type:     schema.TypeBool,
+										Optional: true,
+									},
+								},
+							},
+						},
+						"patch_body": {
+							Type:     schema.TypeString,
 							Optional: true,
 						},
 					},
@@ -416,12 +602,11 @@ func datasourcePipelineDocumentRead(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-// parametersDecodeDocument iterates over each parameter. The schema for the parameters
-// is being set to TypeSet, which means in that case order does not matter.
+// parametersDecodeDocument iterates over each parameter.
 // The parameter "hasOptions" is assumed based on the fact if the "options" are being
 // populated or not
 func parametersDecodeDocument(parameters interface{}) []*api.PipelineParameter {
-	var selParams = parameters.(*schema.Set).List()
+	var selParams = parameters.([]interface{}) //(*schema.Set).List()
 	params := make([]*api.PipelineParameter, len(selParams))
 
 	for i, param := range selParams {
@@ -455,17 +640,28 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 		stageField := stg.(map[string]interface{})
 		sg := &api.Stage{}
 
+		// most of the schema should be decoded here
 		err := mapstructure.Decode(stageField, &sg)
 		if err != nil {
 			return nil, err
 		}
 
-		// extract env variables if any
-		extractEnvs(stageField["container"].([]interface{}), sg)
-
-		// extract variables
-		if vars, ok := stageField["variables"]; ok {
-			for key, value := range vars.(map[string]interface{}) {
+		// Some of the stage fields are only related to the specific stage types
+		switch stageField["type"].(string) {
+		case "runJob":
+			if err := ValidateFields("runJob", []string{"cloud_provider_type", "account"}, stageField); err != nil {
+				return nil, err
+			}
+			if stageField["cloud_provider_type"].(string) == "kubernetes" {
+				extractEnvs(stageField["container"].([]interface{}), sg)
+			} else {
+				return nil, fmt.Errorf("runJob: cloudProviderType = %s not supported at this time", stageField["cloud_provider_type"].(string))
+			}
+		case "evaluateVariables":
+			if err := ValidateFields("evaluateVariables", []string{"variables"}, stageField); err != nil {
+				return nil, err
+			}
+			for key, value := range stageField["variables"].(map[string]interface{}) {
 				sg.Variables = append(sg.Variables, struct {
 					Key   string `json:"key"`
 					Value string `json:"value"`
@@ -473,39 +669,147 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 					Key:   key,
 					Value: value.(string),
 				})
+				// Prevent shifts of the maps within the slice. Suppress unnecessary diffs on the data source
+				sort.Slice(sg.Variables,
+					func(i, j int) bool {
+						return sg.Variables[i].Key < sg.Variables[j].Key
+					})
 			}
-		}
-
-		// evaluate if judgment manual is set, map string values to map
-		if judgmentInputs, ok := stageField["judgment_inputs"]; ok {
-			for _, inpt := range judgmentInputs.([]interface{}) {
+		case "checkPreconditions":
+			if err := ValidateFields("checkPreconditions", []string{"precondition"}, stageField); err != nil {
+				return nil, err
+			}
+		case "manualJudgment":
+			if err := ValidateFields("manualJudgment", []string{"judgment_inputs"}, stageField); err != nil {
+				return nil, err
+			}
+			for _, inpt := range stageField["judgment_inputs"].([]interface{}) {
 				sg.JudgmentInputs = append(sg.JudgmentInputs, struct {
 					Value string `json:"value"`
 				}{
 					Value: inpt.(string),
 				})
 			}
-		}
+		case "runJobManifest":
+			// handle runJobManifest stage type
+			if err := ValidateFields("runJobManifest", []string{"manifest", "account", "source"}, stageField); err != nil {
+				return nil, err
+			}
+			manifestJSON, err := yaml.YAMLToJSON([]byte(stageField["manifest"].(string)))
+			if err != nil {
+				return nil, err
+			}
+			err = json.Unmarshal(manifestJSON, &sg.Manifest)
+			if err != nil {
+				return nil, err
+			}
 
-		// stage_enabled is being populated in pipeline's json only if
-		// the Execution Optional within the job definition is set to "Conditional on Expression"
-		// The only accepted type in spinnaker at this moment is "expression"
-		// Instead of accepting:
-		// {
-		//	 expression: "<VALUE>",
-		//   type: "expression"
-		// }
-		// accept:
-		//   expression: "VALUE"
-		// and assume the type
-		if stageEnabled, ok := stageField["stage_enabled"]; ok {
-			// most likely will be iterated only once
-			for key, value := range stageEnabled.(map[string]interface{}) {
-				sg.StageEnabled.Expression = value.(string)
-				sg.StageEnabled.Type = key
+			// default to CloudProvider if field is not defined
+			if _, defined := stageField["manifest_artifact_account"]; !defined {
+				if cloudProvider, ok := stageField["cloud_provider"]; ok {
+					sg.ManifestArtifactAccount = cloudProvider.(string)
+				}
+			}
+
+			// the json `alias` is always being defaulted to runJob
+			// setting it here for the consistency
+			sg.Alias = "runJob"
+		case "deployManifest":
+			if err := ValidateFields("deployManifest", []string{"manifest", "account", "source"}, stageField); err != nil {
+				return nil, err
+			}
+			manifestJSON, err := yaml.YAMLToJSON([]byte(stageField["manifest"].(string)))
+			if err != nil {
+				return nil, err
+			}
+			manifestMap := make(map[string]interface{})
+			err = json.Unmarshal(manifestJSON, &manifestMap)
+			if err != nil {
+				return nil, err
+			}
+
+			if manifestMap != nil {
+				sg.Manifests = append(sg.Manifests, manifestMap)
+			}
+
+			// default to CloudProvider if field is not defined
+			if _, defined := stageField["manifest_artifact_account"]; !defined {
+				if cloudProvider, ok := stageField["cloud_provider"]; ok {
+					sg.ManifestArtifactAccount = cloudProvider.(string)
+				}
+			}
+		case "patchManifest":
+			if err := ValidateFields("patchManifest", []string{"location", "mode", "patch_body"}, stageField); err != nil {
+				return nil, err
+			}
+			manifestJSON, err := yaml.YAMLToJSON([]byte(stageField["patch_body"].(string)))
+			if err != nil {
+				return nil, err
+			}
+			err = json.Unmarshal(manifestJSON, &sg.PatchBody)
+			if err != nil {
+				return nil, err
+			}
+
+			// default to CloudProvider if field is not defined
+			if _, defined := stageField["manifest_artifact_account"]; !defined {
+				if cloudProvider, ok := stageField["cloud_provider"]; ok {
+					sg.ManifestArtifactAccount = cloudProvider.(string)
+				}
+			}
+		case "pipeline":
+			if err := ValidateFields("pipeline", []string{"pipeline"}, stageField); err != nil {
+				return nil, err
+			}
+		case "wait":
+			if err := ValidateFields("wait", []string{"wait_time"}, stageField); err != nil {
+				return nil, err
 			}
 		}
 
+		// map notifications stages from simplified resource schema to struct
+		if notifications, ok := stageField["notification"]; ok {
+			for i, notification := range notifications.([]interface{}) {
+				message := notification.(map[string]interface{})["message"]
+
+				if stageCompleted, ok := message.(map[string]interface{})["stage_completed"]; ok {
+					sg.Notifications[i].Message.StageCompleted.Text = stageCompleted.(string)
+				}
+				if stageFailed, ok := message.(map[string]interface{})["stage_failed"]; ok {
+					sg.Notifications[i].Message.StageFailed.Text = stageFailed.(string)
+				}
+				if stageStarting, ok := message.(map[string]interface{})["stage_starting"]; ok {
+					sg.Notifications[i].Message.StageStarting.Text = stageStarting.(string)
+				}
+			}
+			if len(notifications.([]interface{})) > 0 {
+				sg.SendNotification = true
+			}
+		}
+
+		// Execution Options - by default failPipeline is set to true.
+		// to simplify the hcl logic -
+		// set it to false if either continuePipeline or completeOtherBranchesThenFail is set to true
+		if stageField["continue_pipeline"].(bool) || stageField["complete_other_branches_then_fail"].(bool) {
+			*sg.FailPipeline = false
+		}
+
+		// Execution Options
+		// If "Conditional Execution" is being set. Set the Type to it's default value = "expression"
+		// and extract the expression
+		if stageEnabled, ok := stageField["stage_enabled"].(map[string]interface{}); ok {
+			if expression, ok := stageEnabled["expression"].(string); ok {
+				sg.StageEnabled = &api.StageEnabled{
+					Expression: expression,
+					Type:       "expression",
+				}
+			}
+		}
+
+		// Since id/RefID is optional field, "calculate" the value if not provided
+		if sg.RefID == "" {
+			sg.RefID = strconv.Itoa(i + 1)
+		}
 		stgs[i] = sg
 	}
 	return stgs, nil
@@ -553,4 +857,35 @@ func extractEnvs(fields []interface{}, sg *api.Stage) {
 // the tag `omitempty` will be only applied if *bool == nil
 func Bool(v bool) *bool {
 	return &v
+}
+
+// ValidateFields checks if all the required fields for specific stage type have been set
+func ValidateFields(stageType string, v []string, array map[string]interface{}) error {
+	var missing []string
+
+	for _, field := range v {
+		switch value := array[field].(type) {
+		case string:
+			if value == "" {
+				missing = append(missing, field)
+			}
+		case []string:
+			if len(value) == 0 {
+				missing = append(missing, field)
+			}
+		case int:
+			if value == 0 {
+				missing = append(missing, field)
+			}
+		default:
+			if value == nil {
+				missing = append(missing, field)
+			}
+		}
+
+		for _, field = range missing {
+			return fmt.Errorf("stage type '%s': required field `%s` is missing", stageType, field)
+		}
+	}
+	return nil
 }
