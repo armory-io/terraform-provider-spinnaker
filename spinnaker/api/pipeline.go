@@ -33,8 +33,8 @@ type PipelineParameter struct {
 	Name        string     `json:"name"`
 	Required    bool       `json:"required"`
 	HasOptions  bool       `json:"hasOptions"`
-	Options     []*Options `json:"options,omitempty"`
 	Label       string     `json:"label,omitempty"`
+	Options     []*Options `json:"options,omitempty"`
 }
 
 type Options struct {
@@ -49,78 +49,6 @@ type Pipeline struct {
 	KeepWaitingPipelines *bool                `json:"keepWaitingPipelines,omitempty" mapstructure:"wait"`
 	Stages               []*Stage             `json:"stages,omitempty" mapstructure:"stage"`
 	Parameters           []*PipelineParameter `json:"parameterConfig,omitempty" mapstructure:"parameter"`
-}
-
-type Stage struct {
-	Account                       string            `json:"account,omitempty"`
-	Application                   string            `json:"application,omitempty"`
-	CloudProvider                 string            `json:"cloudProvider,omitempty" mapstructure:"cloud_provider"`
-	CloudProviderType             string            `json:"cloudProviderType,omitempty" mapstructure:"cloud_provider_type"`
-	Annotations                   map[string]string `json:"annotations,omitempty"`
-	Clusters                      string            `json:"clusters,omitempty"`
-	CompleteOtherBranchesThenFail bool              `json:"completeOtherBranchesThenFail,omitempty" mapstructure:"complete_other_branches_then_fail"`
-	ContinuePipeline              bool              `json:"continuePipeline,omitempty" mapstructure:"continue_pipeline"`
-	FailPipeline                  bool              `json:"failPipeline,omitempty" mapstructure:"fail_pipeline"`
-	FailOnFailedExpressions       bool              `json:"failOnFailedExpressions,omitempty" mapstructure:"fail_on_failed_expression"`
-	Instructions                  string            `json:"instructions,omitempty"`
-	JudgmentInputs                []struct {
-		Value string `json:"value"`
-	} `json:"judgmentInputs,omitempty"`
-	StageEnabled struct {
-		Expression string `json:"expression,omitempty"`
-		Type       string `json:"type,omitempty"`
-	} `json:"stageEnabled,omitempty"`
-	Pipeline           string            `json:"pipeline,omitempty"`
-	PipelineParameters map[string]string `json:"pipelineParameters,omitempty" mapstructure:"pipeline_parameters"`
-	Variables          []struct {
-		Key   string `json:"key"`
-		Value string `json:"value"`
-	} `json:"variables,omitempty" mapstructure:"-"`
-	Containers []struct {
-		Args    []string `json:"args,omitempty"`
-		Command []string `json:"command,omitempty"`
-		EnvVars []struct {
-			Name  string `json:"name"`
-			Value string `json:"value"`
-		} `json:"envVars,omitempty"`
-		ImageDescription struct {
-			Account    string `json:"account,omitempty"`
-			ImageID    string `json:"imageId,omitempty" mapstructure:"id"`
-			Registry   string `json:"registry,omitempty"`
-			Repository string `json:"repository,omitempty"`
-			Tag        string `json:"tag,omitempty"`
-		} `json:"imageDescription,omitempty" mapstructure:"image"`
-		ImagePullPolicy string `json:"imagePullPolicy,omitempty" mapstructure:"image_pull_policy"`
-		Name            string `json:"name,omitempty"`
-		Ports           []struct {
-			ContainerPort int    `json:"containerPort,omitempty" mapstructure:"container"`
-			Name          string `json:"name,omitempty"`
-			Protocol      string `json:"protocol,omitempty"`
-		} `json:"ports,omitempty"`
-	} `json:"containers,omitempty" mapstructure:"container"`
-	Preconditions []struct {
-		CloudProvider string `json:"cloudProvider,omitempty" mapstructure:"cloud_provider"`
-		Context       struct {
-			Cluster     string   `json:"cluster,omitempty"`
-			Comparison  string   `json:"comparison,omitempty"`
-			Credentials string   `json:"credentials,omitempty"`
-			Expected    int      `json:"expected,omitempty"`
-			Regions     []string `json:"regions,omitempty"`
-			Expression  string   `json:"expression,omitempty"`
-		} `json:"context,omitempty"`
-		FailPipeline bool   `json:"failPipeline" mapstructure:"fail_pipeline"`
-		Type         string `json:"type"`
-	} `json:"preconditions,omitempty" mapstructure:"precondition"`
-	DeferredInitialization *bool         `json:"deferredInitialization,omitempty" mapstructure:"deferred_initialization"`
-	DNSPolicy              string        `json:"dnsPolicy,omitempty" mapstructure:"dns_policy"`
-	Name                   string        `json:"name,omitempty"`
-	Namespace              string        `json:"namespace,omitempty"`
-	RefID                  string        `json:"refId,omitempty" mapstructure:"ref_id"`
-	RequisiteStageRefIds   []interface{} `json:"requisiteStageRefIds,omitempty" mapstructure:"requisite_stage_refids"`
-	Type                   string        `json:"type,omitempty"`
-	StatusURLResolution    string        `json:"statusUrlResolution,omitempty" mapstructure:"status_url_resolution"`
-	WaitTime               int           `json:"waitTime,omitempty" mapstructure:"wait_time"`
-	WaitForCompletion      bool          `json:"waitForCompletion,omitempty" mapstructure:"wait_for_completion"`
 }
 
 func CreatePipeline(client *gate.GatewayClient, pipeline interface{}) error {
