@@ -13,7 +13,12 @@ const (
 )
 
 func CreatePipelineTemplate(client *gate.GatewayClient, template interface{}) error {
-	resp, err := client.PipelineTemplatesControllerApi.CreateUsingPOST(client.Context, template)
+	_, resp, err := retry(func() (map[string]interface{}, *http.Response, error) {
+		resp, err := client.PipelineTemplatesControllerApi.CreateUsingPOST(client.Context, template)
+
+		return nil, resp, err
+	})
+
 	if err != nil {
 		return err
 	}
@@ -26,7 +31,10 @@ func CreatePipelineTemplate(client *gate.GatewayClient, template interface{}) er
 }
 
 func GetPipelineTemplate(client *gate.GatewayClient, templateID string, dest interface{}) error {
-	successPayload, resp, err := client.PipelineTemplatesControllerApi.GetUsingGET(client.Context, templateID)
+	successPayload, resp, err := retry(func() (map[string]interface{}, *http.Response, error) {
+		return client.PipelineTemplatesControllerApi.GetUsingGET(client.Context, templateID)
+	})
+
 	if err != nil {
 		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			return fmt.Errorf("%s", ErrCodeNoSuchEntityException)
@@ -55,7 +63,10 @@ func GetPipelineTemplate(client *gate.GatewayClient, templateID string, dest int
 }
 
 func DeletePipelineTemplate(client *gate.GatewayClient, templateID string) error {
-	_, resp, err := client.PipelineTemplatesControllerApi.DeleteUsingDELETE(client.Context, templateID, nil)
+	_, resp, err := retry(func() (map[string]interface{}, *http.Response, error) {
+		return client.PipelineTemplatesControllerApi.DeleteUsingDELETE(client.Context, templateID, nil)
+	})
+
 	if err != nil {
 		return err
 	}
@@ -70,7 +81,12 @@ func DeletePipelineTemplate(client *gate.GatewayClient, templateID string) error
 }
 
 func UpdatePipelineTemplate(client *gate.GatewayClient, templateID string, template interface{}) error {
-	resp, err := client.PipelineTemplatesControllerApi.UpdateUsingPOST(client.Context, templateID, template, nil)
+	_, resp, err := retry(func() (map[string]interface{}, *http.Response, error) {
+		resp, err := client.PipelineTemplatesControllerApi.UpdateUsingPOST(client.Context, templateID, template, nil)
+
+		return nil, resp, err
+	})
+
 	if err != nil {
 		return err
 	}
