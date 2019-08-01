@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform/helper/schema"
 	"net/http"
 	"strings"
 	"time"
@@ -31,12 +32,16 @@ func GetApplication(client *gate.GatewayClient, applicationName string, dest int
 	return nil
 }
 
-func CreateApplication(client *gate.GatewayClient, applicationName, email string) error {
+func CreateApplication(client *gate.GatewayClient, applicationData *schema.ResourceData) error {
+	applicationName := applicationData.Get("application").(string)
 
 	app := map[string]interface{}{
-		"instancePort": 80,
-		"name":         applicationName,
-		"email":        email,
+		"instancePort":   80,
+		"name":           applicationName,
+		"email":          applicationData.Get("email").(string),
+		"repoType":       applicationData.Get("repo_type").(string),
+		"repoProjectKey": applicationData.Get("repo_project_key").(string),
+		"repoSlug":       applicationData.Get("repo_slug").(string),
 	}
 
 	createAppTask := map[string]interface{}{

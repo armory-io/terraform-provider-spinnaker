@@ -18,6 +18,18 @@ func resourceApplication() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"repo_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"repo_slug": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"repo_project_key": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 		Create: resourceApplicationCreate,
 		Read:   resourceApplicationRead,
@@ -30,21 +42,15 @@ func resourceApplication() *schema.Resource {
 type applicationRead struct {
 	Name       string `json:"name"`
 	Attributes struct {
-		Email string `json:"email"`
+		Email          string `json:"email"`
+		RepoType       string `json:"repoType"`
+		RepoProjectKey string `json:"repoProjectKey"`
+		RepoSlug       string `json:"repoSlug"`
 	} `json:"attributes"`
 }
 
 func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) error {
-	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
-	application := data.Get("application").(string)
-	email := data.Get("email").(string)
-
-	if err := api.CreateApplication(client, application, email); err != nil {
-		return err
-	}
-
-	return resourceApplicationRead(data, meta)
+	return upsertApplication(data, meta)
 }
 
 func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error {
@@ -60,7 +66,7 @@ func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceApplicationUpdate(data *schema.ResourceData, meta interface{}) error {
-	return nil
+	return upsertApplication(data, meta)
 }
 
 func resourceApplicationDelete(data *schema.ResourceData, meta interface{}) error {
@@ -90,6 +96,17 @@ func resourceApplicationExists(data *schema.ResourceData, meta interface{}) (boo
 	}
 
 	return true, nil
+}
+
+func upsertApplication(data *schema.ResourceData, meta interface{}) error {
+	clientConfig := meta.(gateConfig)
+	client := clientConfig.client
+
+	if err := api.CreateApplication(client, data); err != nil {
+		return err
+	}
+
+	return resourceApplicationRead(data, meta)
 }
 
 func readApplication(data *schema.ResourceData, application applicationRead) error {
