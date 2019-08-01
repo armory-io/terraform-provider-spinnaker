@@ -499,7 +499,7 @@ func datasourcePipelineDocument() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"location": {
+						"kind": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -739,7 +739,7 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 				}
 			}
 		case "patchManifest":
-			if err := ValidateFields("patchManifest", []string{"location", "mode", "patch_body"}, stageField); err != nil {
+			if err := ValidateFields("patchManifest", []string{"patch_body"}, stageField); err != nil {
 				return nil, err
 			}
 			manifestJSON, err := yaml.YAMLToJSON([]byte(stageField["patch_body"].(string)))
@@ -757,10 +757,40 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 					sg.ManifestArtifactAccount = cloudProvider.(string)
 				}
 			}
+
+			// default app: "" to the application name for the stage
+			sg.App = sg.Application
+			sg.Application = ""
+			// The only supported mode for the terraform invocation is static, so default to it.
+			// set source to "text"
+			sg.Mode = "static"
+
+			// PatchManifest location in fact is a namespace, let's reuse
+			sg.Location = sg.Namespace
+			sg.Namespace = ""
+
+			sg.ManifestName = fmt.Sprintf("%s %s", stageField["kind"].(string), stageField["manifest"])
+		case "findArtifactsFromResource":
+			if err := ValidateFields("findArtifactsFromResource", []string{"manifest", "kind"}, stageField); err != nil {
+				return nil, err
+			}
+			// default app: "" to the application name for the stage
+			sg.App = sg.Application
+			sg.Application = ""
+			// The only supported mode for the terraform invocation is static, so default to it.
+			// set source to "text"
+			sg.Mode = "static"
+
+			// PatchManifest location in fact is a namespace, let's reuse
+			sg.Location = sg.Namespace
+			sg.Namespace = ""
+
+			sg.ManifestName = fmt.Sprintf("%s %s", stageField["kind"].(string), stageField["manifest"])
 		case "pipeline":
 			if err := ValidateFields("pipeline", []string{"pipeline"}, stageField); err != nil {
 				return nil, err
 			}
+
 		case "wait":
 			if err := ValidateFields("wait", []string{"wait_time"}, stageField); err != nil {
 				return nil, err

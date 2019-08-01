@@ -122,9 +122,9 @@ type RunJobManifest struct {
 	Manifest              map[string]interface{} `json:"manifest,omitempty" mapstructure:"-"`
 }
 
-type PatchManifest struct {
+type PatchFindArtifactsFromResourceManifest struct {
 	App          string `json:"app,omitempty" mapstructure:"-"`
-	Location     string `json:"location,omitempty"`
+	Location     string `json:"location,omitempty" mapstructure:"-"`
 	ManifestName string `json:"manifestName,omitempty" mapstructure:"-"`
 	Mode         string `json:"mode,omitempty"`
 	Options      struct {
@@ -137,9 +137,9 @@ type KubernetesManifest struct {
 	Source                  string `json:"source,omitempty"`
 	ManifestArtifactAccount string `json:"manifestArtifactAccount,omitempty" mapstructure:"manifest_artifact_account"`
 
-	RunJobManifest `mapstructure:",squash"`
-	DeployManifest `mapstructure:",squash"`
-	PatchManifest  `mapstructure:",squash"`
+	RunJobManifest                         `mapstructure:",squash"`
+	DeployManifest                         `mapstructure:",squash"`
+	PatchFindArtifactsFromResourceManifest `mapstructure:",squash"`
 }
 
 type Stage struct {
