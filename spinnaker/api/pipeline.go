@@ -29,7 +29,7 @@ type PipelineDocument struct {
 
 type PipelineParameter struct {
 	Description string     `json:"description,omitempty"`
-	Default     string     `json:"default,omitempty"`
+	Default     string     `json:"default"`
 	Name        string     `json:"name"`
 	Required    bool       `json:"required"`
 	HasOptions  bool       `json:"hasOptions"`
