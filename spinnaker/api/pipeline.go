@@ -37,7 +37,6 @@ func CreatePipeline(client *gate.GatewayClient, pipeline PipelineConfig) error {
 	})
 
 	if ErrorIndicatesPipelineAlreadyExists(err) {
-
 		log.Printf("Pipeline %v for application %v already existed. Deleting and recreating...", pipeline.Name, pipeline.Application)
 		if err = DeletePipeline(client, pipeline.Application, pipeline.Name); err != nil {
 			return fmt.Errorf("error deleting pipeline %v for application %v when trying a recreate. Error: %v", pipeline.Name, pipeline.Application, err.Error())
