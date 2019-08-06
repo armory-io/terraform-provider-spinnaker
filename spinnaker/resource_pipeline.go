@@ -53,14 +53,14 @@ func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
 	pipelineName := data.Get("name").(string)
 	pipeline := data.Get("pipeline").(string)
 
-	var tmp map[string]interface{}
+	var tmp api.PipelineConfig
 	if err := json.NewDecoder(strings.NewReader(pipeline)).Decode(&tmp); err != nil {
 		return err
 	}
 
-	tmp["application"] = applicationName
-	tmp["name"] = pipelineName
-	delete(tmp, "id")
+	tmp.Application = applicationName
+	tmp.Name = pipelineName
+	//delete(tmp, "id")
 
 	if err := api.CreatePipeline(client, tmp); err != nil {
 		return err
@@ -147,7 +147,7 @@ func resourcePipelineExists(data *schema.ResourceData, meta interface{}) (bool, 
 	pipelineName := data.Get("name").(string)
 
 	var p pipelineRead
-	if _, err := api.GetPipeline(client, applicationName, pipelineName, &p); err != nil {
+	if jsonMap, err := api.GetPipeline(client, applicationName, pipelineName, &p); err != nil && len(jsonMap) > 0 {
 		return false, err
 	}
 

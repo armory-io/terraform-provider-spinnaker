@@ -2,18 +2,52 @@ package api
 
 import (
 	"fmt"
-	"net/http"
-
 	"github.com/mitchellh/mapstructure"
 	gate "github.com/spinnaker/spin/cmd/gateclient"
+	"log"
+	"net/http"
+	"strings"
 )
 
-func CreatePipeline(client *gate.GatewayClient, pipeline interface{}) error {
+type PipelineConfig struct {
+	ID                   string                   `json:"id,omitempty"`
+	Type                 string                   `json:"type,omitempty"`
+	Name                 string                   `json:"name"`
+	Application          string                   `json:"application"`
+	Description          string                   `json:"description,omitempty"`
+	ExecutionEngine      string                   `json:"executionEngine,omitempty"`
+	Parallel             bool                     `json:"parallel"`
+	LimitConcurrent      bool                     `json:"limitConcurrent"`
+	KeepWaitingPipelines bool                     `json:"keepWaitingPipelines"`
+	Stages               []map[string]interface{} `json:"stages,omitempty"`
+	Triggers             []map[string]interface{} `json:"triggers,omitempty"`
+	ExpectedArtifacts    []map[string]interface{} `json:"expectedArtifacts,omitempty"`
+	Parameters           []map[string]interface{} `json:"parameterConfig,omitempty"`
+	Notifications        []map[string]interface{} `json:"notifications,omitempty"`
+	LastModifiedBy       string                   `json:"lastModifiedBy"`
+	Config               interface{}              `json:"config,omitempty"`
+	UpdateTs             string                   `json:"updateTs"`
+}
+
+func CreatePipeline(client *gate.GatewayClient, pipeline PipelineConfig) error {
 	_, resp, err := retry(func() (map[string]interface{}, *http.Response, error) {
 		resp, err := client.PipelineControllerApi.SavePipelineUsingPOST(client.Context, pipeline)
 
 		return nil, resp, err
 	})
+
+	if ErrorIndicatesPipelineAlreadyExists(err) {
+
+		log.Printf("Pipeline %v for application %v already existed. Deleting and recreating...", pipeline.Name, pipeline.Application)
+		if err = DeletePipeline(client, pipeline.Application, pipeline.Name); err != nil {
+			return fmt.Errorf("error deleting pipeline %v for application %v when trying a recreate. Error: %v", pipeline.Name, pipeline.Application, err.Error())
+		}
+		if err = CreatePipeline(client, pipeline); err != nil {
+			return fmt.Errorf("error recreating pipeline %v for application %v. Error: %v", pipeline.Name, pipeline.Application, err.Error())
+		}
+
+		return nil
+	}
 
 	if err != nil {
 		return err
@@ -24,6 +58,10 @@ func CreatePipeline(client *gate.GatewayClient, pipeline interface{}) error {
 	}
 
 	return nil
+}
+
+func ErrorIndicatesPipelineAlreadyExists(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "A pipeline with name") && strings.Contains(err.Error(), "already exists")
 }
 
 func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName string, dest interface{}) (map[string]interface{}, error) {
@@ -39,7 +77,7 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			return jsonMap, fmt.Errorf("%s", ErrCodeNoSuchEntityException)
 		}
-		return jsonMap, fmt.Errorf("Encountered an error getting pipeline %s, %s\n",
+		return jsonMap, fmt.Errorf("Encountered an error getting pipeline %s. Error: %s\n",
 			pipelineName,
 			err.Error())
 	}
@@ -95,6 +133,6 @@ func DeletePipeline(client *gate.GatewayClient, applicationName, pipelineName st
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Encountered an error deleting pipeline, status code: %d\n", resp.StatusCode)
 	}
-
+	log.Printf("deleted pipeline %v for application %v", pipelineName, applicationName)
 	return nil
 }
