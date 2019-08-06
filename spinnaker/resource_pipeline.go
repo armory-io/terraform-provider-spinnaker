@@ -147,7 +147,7 @@ func resourcePipelineExists(data *schema.ResourceData, meta interface{}) (bool, 
 	pipelineName := data.Get("name").(string)
 
 	var p pipelineRead
-	if jsonMap, err := api.GetPipeline(client, applicationName, pipelineName, &p); err != nil && len(jsonMap) > 0 {
+	if _, err := api.GetPipeline(client, applicationName, pipelineName, &p); err != nil && !strings.Contains(err.Error(), "EOF") {
 		return false, err
 	}
 
