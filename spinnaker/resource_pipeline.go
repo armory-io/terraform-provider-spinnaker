@@ -3,6 +3,7 @@ package spinnaker
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
@@ -53,14 +54,14 @@ func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
 	pipelineName := data.Get("name").(string)
 	pipeline := data.Get("pipeline").(string)
 
-	var tmp api.PipelineConfig
+	var tmp map[string]interface{}
 	if err := json.NewDecoder(strings.NewReader(pipeline)).Decode(&tmp); err != nil {
 		return err
 	}
 
-	tmp.Application = applicationName
-	tmp.Name = pipelineName
-	//delete(tmp, "id")
+	tmp["application"] = applicationName
+	tmp["name"] = pipelineName
+	delete(tmp, "id")
 
 	if err := api.CreatePipeline(client, tmp); err != nil {
 		return err
