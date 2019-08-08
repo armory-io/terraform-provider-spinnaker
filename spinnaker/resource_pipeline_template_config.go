@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
 	"github.com/ghodss/yaml"
 	"github.com/hashicorp/terraform/helper/schema"
-	"log"
 )
 
 type PipelineConfig struct {
