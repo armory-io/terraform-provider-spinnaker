@@ -3,7 +3,6 @@ package spinnaker
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"

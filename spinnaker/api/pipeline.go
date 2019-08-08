@@ -2,10 +2,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/mitchellh/mapstructure"
-	gate "github.com/spinnaker/spin/cmd/gateclient"
 	"log"
 	"net/http"
+)
+import (
+	"github.com/mitchellh/mapstructure"
+	gate "github.com/spinnaker/spin/cmd/gateclient"
 )
 
 func CreatePipeline(client *gate.GatewayClient, pipeline interface{}) error {
