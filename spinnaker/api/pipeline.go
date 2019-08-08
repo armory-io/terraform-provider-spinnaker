@@ -2,8 +2,10 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-
+)
+import (
 	"github.com/mitchellh/mapstructure"
 	gate "github.com/spinnaker/spin/cmd/gateclient"
 )
@@ -39,7 +41,7 @@ func GetPipeline(client *gate.GatewayClient, applicationName, pipelineName strin
 		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			return jsonMap, fmt.Errorf("%s", ErrCodeNoSuchEntityException)
 		}
-		return jsonMap, fmt.Errorf("Encountered an error getting pipeline %s, %s\n",
+		return jsonMap, fmt.Errorf("Encountered an error getting pipeline %s. Error: %s\n",
 			pipelineName,
 			err.Error())
 	}
@@ -95,6 +97,6 @@ func DeletePipeline(client *gate.GatewayClient, applicationName, pipelineName st
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Encountered an error deleting pipeline, status code: %d\n", resp.StatusCode)
 	}
-
+	log.Printf("deleted pipeline %v for application %v", pipelineName, applicationName)
 	return nil
 }
