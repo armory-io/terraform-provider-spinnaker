@@ -6,7 +6,6 @@ data "spinnaker_pipeline_document" "example" {
         name = "...."
         namespace = "default"
         account = "spinnaker-registered-kubernetes-account"
-        cloud_provider = "kubernetes"
 
         manifest = "${data.template_file.example.rendered}"
 
@@ -23,6 +22,6 @@ The following arguments are supported:
 
 - `namespace` - The namespace the pod will be deployed into.
 - `account` - The name of the kubernetes spinnaker account name to deploy the pod to.
-- `cloud_provider` - The clouddriver's driver name.
+- `cloud_provider` (optional) - The clouddriver's driver name. Defaults to `kubernetes`
 - `source` - The field specifies the source of the manifest. At this stage only `text` is being supported.
-- `moniker` - Configures custom moniker for the runJob.
+- `moniker` (optional) - Configures custom moniker for the runJob. Used for custom annotations, see [docs](https://www.spinnaker.io/reference/providers/kubernetes-v2/#moniker)

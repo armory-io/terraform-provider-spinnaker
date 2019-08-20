@@ -704,6 +704,12 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 				return nil, err
 			}
 
+			// Since runJobManifest is a stage type supported only by the kubernetes v2 driver
+			// default it to `kubernetes` unless specified otherwise
+			if _, defined := stageField["cloud_provider"]; !defined {
+				sg.CloudProvider = "kubernetes"
+			}
+
 			// default to CloudProvider if field is not defined
 			if _, defined := stageField["manifest_artifact_account"]; !defined {
 				if cloudProvider, ok := stageField["cloud_provider"]; ok {
@@ -732,6 +738,12 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 				sg.Manifests = append(sg.Manifests, manifestMap)
 			}
 
+			// Since deployManifest is a stage type supported only by the kubernetes v2 driver
+			// default it to `kubernetes` unless specified otherwise
+			if _, defined := stageField["cloud_provider"]; !defined {
+				sg.CloudProvider = "kubernetes"
+			}
+
 			// default to CloudProvider if field is not defined
 			if _, defined := stageField["manifest_artifact_account"]; !defined {
 				if cloudProvider, ok := stageField["cloud_provider"]; ok {
@@ -749,6 +761,12 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 			err = json.Unmarshal(manifestJSON, &sg.PatchBody)
 			if err != nil {
 				return nil, err
+			}
+
+			// Since patchManifest is a stage type supported only by the kubernetes v2 driver
+			// default it to `kubernetes` unless specified otherwise
+			if _, defined := stageField["cloud_provider"]; !defined {
+				sg.CloudProvider = "kubernetes"
 			}
 
 			// default to CloudProvider if field is not defined
@@ -784,6 +802,12 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 			// PatchManifest location in fact is a namespace, let's reuse
 			sg.Location = sg.Namespace
 			sg.Namespace = ""
+
+			// Since findArtifactsFromResource is a stage type supported only by the kubernetes v2 driver
+			// default it to `kubernetes` unless specified otherwise
+			if _, defined := stageField["cloud_provider"]; !defined {
+				sg.CloudProvider = "kubernetes"
+			}
 
 			sg.ManifestName = fmt.Sprintf("%s %s", stageField["kind"].(string), stageField["manifest"])
 		case "pipeline":
