@@ -728,12 +728,11 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 
 			// The YAMLtoJSON function doesn't currently support yaml files with multiple documents (seperated by '---').
 			// Therefore we need to split the yaml file ourselves and convert the documents individually.
-			// Then we append to manifestMap after each conversion
-
+			// Then we append to sg.Manifests after each conversion
 			manifests := strings.Split(stageField["manifest"].(string), "---\n")
-			manifestMap := make(map[string]interface{})
-
 			for i := range manifests {
+				manifestMap := make(map[string]interface{})
+
 				manifestJSON, err := yaml.YAMLToJSON([]byte(manifests[i]))
 				if err != nil {
 					return nil, err
@@ -743,10 +742,10 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 				if err != nil {
 					return nil, err
 				}
-			}
 
-			if manifestMap != nil {
-				sg.Manifests = append(sg.Manifests, manifestMap)
+				if manifestMap != nil {
+					sg.Manifests = append(sg.Manifests, manifestMap)
+				}
 			}
 
 			// Since deployManifest is a stage type supported only by the kubernetes v2 driver

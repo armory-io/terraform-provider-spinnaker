@@ -5,6 +5,7 @@ go 1.12
 require (
 	cloud.google.com/go v0.37.4 // indirect
 	github.com/ghodss/yaml v1.0.0
+	github.com/google/go-cmp v0.2.0
 	github.com/hashicorp/terraform v0.12.0
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/mitchellh/mapstructure v1.1.2
