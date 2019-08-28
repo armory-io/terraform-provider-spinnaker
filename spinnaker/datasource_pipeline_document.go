@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
 	"github.com/ghodss/yaml"
@@ -724,14 +725,24 @@ func stageDecodeDocument(field interface{}) ([]*api.Stage, error) {
 			if err := ValidateFields("deployManifest", []string{"manifest", "account", "source"}, stageField); err != nil {
 				return nil, err
 			}
-			manifestJSON, err := yaml.YAMLToJSON([]byte(stageField["manifest"].(string)))
-			if err != nil {
-				return nil, err
-			}
+
+			// The YAMLtoJSON function doesn't currently support yaml files with multiple documents (seperated by '---').
+			// Therefore we need to split the yaml file ourselves and convert the documents individually.
+			// Then we append to manifestMap after each conversion
+
+			manifests := strings.Split(stageField["manifest"].(string), "---\n")
 			manifestMap := make(map[string]interface{})
-			err = json.Unmarshal(manifestJSON, &manifestMap)
-			if err != nil {
-				return nil, err
+
+			for i := range manifests {
+				manifestJSON, err := yaml.YAMLToJSON([]byte(manifests[i]))
+				if err != nil {
+					return nil, err
+				}
+
+				err = json.Unmarshal(manifestJSON, &manifestMap)
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			if manifestMap != nil {
