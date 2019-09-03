@@ -12,3 +12,5 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/spinnaker/spin v0.0.0-20190530150642-535d2dc1b985
 )
+
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
