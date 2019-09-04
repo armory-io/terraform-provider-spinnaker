@@ -44,7 +44,7 @@ func TestDocumentSchemaMatchesStruct(t *testing.T) {
 		".pipeline.stage.notification.message.stagefailed.text", ".pipeline.stage.notification.message.stagestarting", ".pipeline.stage.notification.message.stagestarting.text",
 		".pipeline.stage.options.merge_strategy", ".pipeline.stage.options.mergestrategy", ".pipeline.stage.patch_body", ".pipeline.stage.patchbody", ".pipeline.stage.sendnotification",
 		".pipeline.stage.stage_enabled", ".pipeline.stage.stage_enabled.expression", ".pipeline.stage.stageenabled", ".pipeline.stage.variables.key", ".pipeline.stage.variables.value",
-		".pipeline.stage.kind", ".pipeline.stage.location",
+		".pipeline.stage.kind", ".pipeline.stage.location", ".pipeline.trigger.cron_expression", ".pipeline.trigger.cronexpression",
 	}
 
 	// // transofrm some of the fields to make comparision more accurate.
