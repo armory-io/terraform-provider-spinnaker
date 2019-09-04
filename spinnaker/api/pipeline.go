@@ -14,7 +14,6 @@ type PipelineConfig struct {
 	Type              string                   `json:"type,omitempty"`
 	Name              string                   `json:"name"`
 	Application       string                   `json:"application"`
-	Triggers          []map[string]interface{} `json:"triggers,omitempty"`
 	ExpectedArtifacts []map[string]interface{} `json:"expectedArtifacts,omitempty"`
 	Notifications     []map[string]interface{} `json:"notifications,omitempty"`
 	LastModifiedBy    string                   `json:"lastModifiedBy"`
@@ -41,6 +40,12 @@ type Options struct {
 	Value string `json:"value"`
 }
 
+type Trigger struct {
+	Type           string `json:"type,omitempty"`
+	Enabled        bool   `json:"enabled,omitempty"`
+	CronExpression string `json:"cronExpression,omitempty"`
+}
+
 type Pipeline struct {
 	Description          string               `json:"description,omitempty"`
 	ExecutionEngine      string               `json:"executionEngine,omitempty" mapstructure:"engine"`
@@ -49,6 +54,7 @@ type Pipeline struct {
 	KeepWaitingPipelines *bool                `json:"keepWaitingPipelines,omitempty" mapstructure:"wait"`
 	Stages               []*Stage             `json:"stages,omitempty" mapstructure:"stage"`
 	Parameters           []*PipelineParameter `json:"parameterConfig,omitempty" mapstructure:"parameter"`
+	Triggers             []*Trigger           `json:"triggers,omitempty" mapstructure:"trigger"`
 }
 
 func CreatePipeline(client *gate.GatewayClient, pipeline interface{}) error {

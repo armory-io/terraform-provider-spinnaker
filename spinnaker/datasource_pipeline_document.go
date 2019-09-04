@@ -54,6 +54,26 @@ func datasourcePipelineDocument() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"trigger": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"enabled": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"cron_expression": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
 			"parameter": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -567,6 +587,10 @@ func datasourcePipelineDocumentRead(d *schema.ResourceData, meta interface{}) er
 		spDoc.KeepWaitingPipelines = Bool(keepWaiting.(bool))
 	}
 
+	if triggers, ok := d.GetOk("trigger"); ok {
+		spDoc.Triggers = triggerDecodeDocument(triggers)
+	}
+
 	// decouple parameters
 	if parameters, ok := d.GetOk("parameter"); ok {
 		spDoc.Parameters = parametersDecodeDocument(parameters)
@@ -601,6 +625,26 @@ func datasourcePipelineDocumentRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("json", jsonDocument)
 
 	return nil
+}
+
+// triggerDecodeDocument iterates over each trigger.
+func triggerDecodeDocument(triggers interface{}) []*api.Trigger {
+	var selTriggers = triggers.([]interface{})
+	trigs := make([]*api.Trigger, len(selTriggers))
+
+	for i, trig := range selTriggers {
+		ftrig := trig.(map[string]interface{})
+		tr := &api.Trigger{
+			Type:    ftrig["type"].(string),
+			Enabled: ftrig["enabled"].(bool),
+		}
+
+		if cronExp := ftrig["cron_expression"].(string); len(cronExp) > 0 {
+			tr.CronExpression = cronExp
+		}
+		trigs[i] = tr
+	}
+	return trigs
 }
 
 // parametersDecodeDocument iterates over each parameter.

@@ -21,6 +21,9 @@ func (oldDoc *PipelineDocument) Merge(newDoc *PipelineDocument) {
 	if newDoc.KeepWaitingPipelines != nil {
 		oldDoc.KeepWaitingPipelines = newDoc.KeepWaitingPipelines
 	}
+	if newDoc.Triggers != nil {
+		oldDoc.Triggers = newDoc.Triggers
+	}
 	if newDoc.Parameters != nil {
 		for _, newParam := range newDoc.Parameters {
 			found := false
