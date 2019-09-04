@@ -162,7 +162,7 @@ type Stage struct {
 
 	// Notifications and SendNotifcations is shared between:
 	// runPipeline and manualJudgment
-	Notifications    []*Notification `json:"notification,omitempty" mapstructure:"notification"`
+	Notifications    []*Notification `json:"notifications,omitempty" mapstructure:"notification"`
 	SendNotification bool            `json:"sendNotifications"`
 
 	// embedded structs/stage types
