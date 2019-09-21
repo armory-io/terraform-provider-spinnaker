@@ -17,13 +17,13 @@ provider "spinnaker" {
 
 resource "spinnaker_application" "my_app" {
     application = "terraformtest"
-    email = "ethan@armory.io"
+    email       = "ethan@armory.io"
 }
 
 resource "spinnaker_pipeline" "terraform_example" {
     application = "${spinnaker_application.my_app.application}"
-    name = "Example Pipeline"
-    pipeline = file("pipelines/example.json")
+    name        = "Example Pipeline"
+    pipeline    = "${file("pipelines/example.json")}"
 }
 ```
 
