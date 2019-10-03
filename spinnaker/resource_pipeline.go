@@ -27,6 +27,16 @@ func resourcePipeline() *schema.Resource {
 				Required:         true,
 				DiffSuppressFunc: pipelineDiffSuppressFunc,
 			},
+			"lock": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"disable": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"pipeline_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -52,6 +62,7 @@ func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
 	applicationName := data.Get("application").(string)
 	pipelineName := data.Get("name").(string)
 	pipeline := data.Get("pipeline").(string)
+	disable := data.Get("disable").(bool)
 
 	var tmp map[string]interface{}
 	if err := json.NewDecoder(strings.NewReader(pipeline)).Decode(&tmp); err != nil {
@@ -60,6 +71,15 @@ func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
 
 	tmp["application"] = applicationName
 	tmp["name"] = pipelineName
+	tmp["disabled"] = disable
+
+	if lock := data.Get("lock").(bool); lock {
+		tmp["locked"] = map[string]interface{}{
+			"allowUnlockUi": false,
+			"description":   "Locked with terraform",
+		}
+	}
+
 	delete(tmp, "id")
 
 	if err := api.CreatePipeline(client, tmp); err != nil {

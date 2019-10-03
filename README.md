@@ -88,6 +88,8 @@ resource "spinnaker_pipeline" "terraform_example" {
     application = "${spinnaker_application.my_app.application}"
     name = "Example Pipeline"
     pipeline = file("pipelines/example.json")
+    lock = true
+    disable = true
 }
 ```
 
@@ -96,6 +98,8 @@ resource "spinnaker_pipeline" "terraform_example" {
 * `application` - Application name
 * `name` - Pipeline name
 * `pipeline` - Pipeline JSON in string format, example `file(pipelines/example.json)`
+* `lock` - Lock the edit of pipelines in the UI
+* `disable` - Disable a pipeline for the execution
 
 
 ## Data source
