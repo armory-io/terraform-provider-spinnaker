@@ -79,12 +79,13 @@ type CheckPrecondition struct {
 	Preconditions []struct {
 		CloudProvider string `json:"cloudProvider,omitempty" mapstructure:"cloud_provider"`
 		Context       struct {
-			Cluster     string   `json:"cluster,omitempty"`
-			Comparison  string   `json:"comparison,omitempty"`
-			Credentials string   `json:"credentials,omitempty"`
-			Expected    int      `json:"expected,omitempty"`
-			Regions     []string `json:"regions,omitempty"`
-			Expression  string   `json:"expression,omitempty"`
+			Cluster        string   `json:"cluster,omitempty"`
+			Comparison     string   `json:"comparison,omitempty"`
+			Credentials    string   `json:"credentials,omitempty"`
+			Expected       int      `json:"expected,omitempty"`
+			Regions        []string `json:"regions,omitempty"`
+			Expression     string   `json:"expression,omitempty"`
+			FailureMessage string   `json:"failureMessage,omitempty" mapstructure:"failure_message"`
 		} `json:"context,omitempty"`
 		FailPipeline bool   `json:"failPipeline" mapstructure:"fail_pipeline"`
 		Type         string `json:"type"`

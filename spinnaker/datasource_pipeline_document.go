@@ -210,6 +210,10 @@ func datasourcePipelineDocument() *schema.Resource {
 													Type:     schema.TypeInt,
 													Optional: true,
 												},
+												"failure_message": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
 												"regions": {
 													Type:     schema.TypeList,
 													Optional: true,
