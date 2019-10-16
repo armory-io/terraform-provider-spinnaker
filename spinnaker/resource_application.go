@@ -13,6 +13,7 @@ func resourceApplication() *schema.Resource {
 			"application": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"email": {
 				Type:     schema.TypeString,

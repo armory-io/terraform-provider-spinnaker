@@ -88,6 +88,8 @@ resource "spinnaker_pipeline" "terraform_example" {
     application = "${spinnaker_application.my_app.application}"
     name = "Example Pipeline"
     pipeline = file("pipelines/example.json")
+    lock = true
+    disable = true
 }
 ```
 
@@ -96,6 +98,11 @@ resource "spinnaker_pipeline" "terraform_example" {
 * `application` - Application name
 * `name` - Pipeline name
 * `pipeline` - Pipeline JSON in string format, example `file(pipelines/example.json)`
+* `lock` - Lock the edit of pipelines in the UI
+* `disable` - Disable a pipeline for the execution
+
+
+## Data source
 
 ### `spinnaker_pipeline_template`
 
@@ -132,3 +139,6 @@ resource "spinnaker_pipeline_template_config" "terraform_example" {
 #### Argument Reference
 
 * `pipeline_config` - A yaml formated [DCD Spec pipeline configuration](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#configurations)
+
+
+### [`spinnaker_pipeline_document`](docs/data.spinnaker_pipeline_document.md)

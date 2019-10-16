@@ -11,26 +11,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-type PipelineConfig struct {
-	ID                   string                   `json:"id,omitempty"`
-	Type                 string                   `json:"type,omitempty"`
-	Name                 string                   `json:"name"`
-	Application          string                   `json:"application"`
-	Description          string                   `json:"description,omitempty"`
-	ExecutionEngine      string                   `json:"executionEngine,omitempty"`
-	Parallel             bool                     `json:"parallel"`
-	LimitConcurrent      bool                     `json:"limitConcurrent"`
-	KeepWaitingPipelines bool                     `json:"keepWaitingPipelines"`
-	Stages               []map[string]interface{} `json:"stages,omitempty"`
-	Triggers             []map[string]interface{} `json:"triggers,omitempty"`
-	ExpectedArtifacts    []map[string]interface{} `json:"expectedArtifacts,omitempty"`
-	Parameters           []map[string]interface{} `json:"parameterConfig,omitempty"`
-	Notifications        []map[string]interface{} `json:"notifications,omitempty"`
-	LastModifiedBy       string                   `json:"lastModifiedBy"`
-	Config               interface{}              `json:"config,omitempty"`
-	UpdateTs             string                   `json:"updateTs"`
-}
-
 func resourcePipelineTemplateConfig() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -98,7 +78,7 @@ func resourcePipelineTemplateConfigRead(data *schema.ResourceData, meta interfac
 	application := data.Get("application").(string)
 	name := data.Get("name").(string)
 
-	p := PipelineConfig{}
+	p := api.PipelineConfig{}
 	if _, err := api.GetPipeline(client, application, name, &p); err != nil {
 		if err.Error() == api.ErrCodeNoSuchEntityException {
 			data.SetId("")
@@ -174,7 +154,7 @@ func resourcePipelineTemplateConfigExists(data *schema.ResourceData, meta interf
 	return false, nil
 }
 
-func buildConfig(data *schema.ResourceData) (*PipelineConfig, error) {
+func buildConfig(data *schema.ResourceData) (*api.PipelineConfig, error) {
 	config := data.Get("pipeline_config").(string)
 
 	d, err := yaml.YAMLToJSON([]byte(config))
@@ -203,14 +183,16 @@ func buildConfig(data *schema.ResourceData) (*PipelineConfig, error) {
 		return nil, fmt.Errorf("application not set in pipeline configuration")
 	}
 
-	pConfig := &PipelineConfig{
-		Name:                 name,
-		Application:          application,
-		Type:                 "templatedPipeline",
-		Parallel:             data.Get("parallel").(bool),
-		LimitConcurrent:      data.Get("limit_concurrent").(bool),
-		KeepWaitingPipelines: data.Get("keep_waiting").(bool),
-		Config:               jsonContent,
+	pConfig := &api.PipelineConfig{
+		Name:        name,
+		Application: application,
+		Type:        "templatedPipeline",
+		Pipeline: api.Pipeline{
+			Parallel:             Bool(data.Get("parallel").(bool)),
+			LimitConcurrent:      Bool(data.Get("limit_concurrent").(bool)),
+			KeepWaitingPipelines: Bool(data.Get("keep_waiting").(bool)),
+		},
+		Config: jsonContent,
 	}
 
 	if c, ok := jsonContent["configuration"].(map[string]interface{}); ok {
