@@ -13,9 +13,10 @@ func resourcePipeline() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"application": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Required:     true,
+				ValidateFunc: validateApplicationName,
 			},
 			"name": {
 				Type:     schema.TypeString,
