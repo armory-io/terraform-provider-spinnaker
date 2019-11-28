@@ -40,6 +40,7 @@ $ env GO111MODULE=on go build
 ```
 
 #### Installing 3rd Party Plugins
+_Requires Terraform 0.12+_
 
 See [Terraform documentation](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins) for installing 3rd party plugins.
 
