@@ -11,8 +11,9 @@ func resourceApplication() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"application": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validateApplicationName,
 			},
 			"email": {
 				Type:     schema.TypeString,
