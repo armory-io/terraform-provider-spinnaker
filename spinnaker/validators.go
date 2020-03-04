@@ -7,7 +7,7 @@ import (
 
 func validateApplicationName(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
-	if !regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString(value) {
+	if !regexp.MustCompile(`^[a-zA-Z0-9-]+$`).MatchString(value) {
 		errors = append(errors, fmt.Errorf("Only alphanumeric characters allowed in %q", k))
 	}
 	return
