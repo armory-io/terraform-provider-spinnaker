@@ -8,6 +8,7 @@ func TestValidateApplicationName(t *testing.T) {
 	validNames := []string{
 		"ValidName",
 		"validname",
+		"invalid-name",
 	}
 	for _, v := range validNames {
 		_, errors := validateApplicationName(v, "application")
@@ -20,7 +21,6 @@ func TestValidateApplicationName(t *testing.T) {
 		"invalid:name",
 		"invalid name",
 		"invalid_name",
-		"invalid-name",
 		"",
 	}
 	for _, v := range invalidNames {
