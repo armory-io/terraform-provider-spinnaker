@@ -9,6 +9,13 @@ executors:
           GO111MODULE: "on"
 
 jobs:
+  test:
+    executor: golang
+    steps:
+      - checkout
+      - run: go get -v -t -d ./...
+      - run: go test -v ./...
+
   release:
     executor: golang
     steps:
@@ -18,7 +25,10 @@ jobs:
 workflows:
   main:
     jobs:
+      - test
       - release:
+          requires:
+            - test
           filters:
             branches:
               ignore: /.*/
