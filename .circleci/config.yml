@@ -1,45 +1,19 @@
 version: 2.1
 
-executors:
-  golang:
-    working_directory: /go/src/github.com/mercari/terraform-provider-spinnaker
-    docker:
-      - image:  golang:1.13-buster
-        environment:
-          GO111MODULE: "on"
-
 jobs:
-  build:
-    executor: golang
-    steps:
-      - checkout
-      - run: go get -v -t -d ./...
-      - run: go build 
-
-  test:
-    executor: golang
-    steps:
-      - checkout
-      - run: go get -v -t -d ./...
-      - run: go test -v ./...
-
   release:
-    executor: golang
+    docker:
+      - image: circleci/golang:1.14
     steps:
       - checkout
       - run: curl -sL https://git.io/goreleaser | bash
 
 workflows:
-  test-and-release:
+  main:
     jobs:
-      - build
-      - test
       - release:
-          requires:
-            - build
-            - test
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /[0-9]+(\.[0-9]+)*(-.*)*/
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
