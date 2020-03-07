@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/spf13/pflag"
 	gate "github.com/spinnaker/spin/cmd/gateclient"
+	"sync"
 )
 
 func Provider() *schema.Provider {
@@ -48,8 +49,24 @@ func Provider() *schema.Provider {
 }
 
 type gateConfig struct {
-	server string
-	client *gate.GatewayClient
+	server     string
+	flags      *pflag.FlagSet
+	clientOnce sync.Once
+	client     *gate.GatewayClient
+	clientErr  error
+}
+
+func (g *gateConfig) lazyInit() {
+	g.clientOnce.Do(func() {
+		client, err := gate.NewGateClient(g.flags)
+		g.client = client
+		g.clientErr = err
+	})
+}
+
+func (g *gateConfig) getClient() (*gate.GatewayClient, error) {
+	g.lazyInit()
+	return g.client, g.clientErr
 }
 
 func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
@@ -67,12 +84,9 @@ func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
 	flags.String("config", config, "")
 	flags.String("default-headers", defaultHeaders, "")
 	// flags.Parse()
-	client, err := gate.NewGateClient(flags)
-	if err != nil {
-		return nil, err
-	}
-	return gateConfig{
+	gc := gateConfig{
+		flags:  flags,
 		server: data.Get("server").(string),
-		client: client,
-	}, nil
+	}
+	return gc, nil
 }

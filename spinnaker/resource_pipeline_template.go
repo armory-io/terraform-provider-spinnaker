@@ -39,7 +39,11 @@ type templateRead struct {
 
 func resourcePipelineTemplateCreate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	var templateName string
 	template := data.Get("template").(string)
 
@@ -72,7 +76,11 @@ func resourcePipelineTemplateCreate(data *schema.ResourceData, meta interface{})
 
 func resourcePipelineTemplateRead(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	templateName := data.Id()
 
 	t := make(map[string]interface{})
@@ -107,7 +115,11 @@ func resourcePipelineTemplateRead(data *schema.ResourceData, meta interface{}) e
 
 func resourcePipelineTemplateUpdate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	var templateName string
 	template := data.Get("template").(string)
 
@@ -137,7 +149,11 @@ func resourcePipelineTemplateUpdate(data *schema.ResourceData, meta interface{})
 
 func resourcePipelineTemplateDelete(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	templateName := data.Id()
 
 	if err := api.DeletePipelineTemplate(client, templateName); err != nil {
@@ -150,7 +166,11 @@ func resourcePipelineTemplateDelete(data *schema.ResourceData, meta interface{})
 
 func resourcePipelineTemplateExists(data *schema.ResourceData, meta interface{}) (bool, error) {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return false, err
+	}
+
 	templateName := data.Id()
 
 	t := &templateRead{}

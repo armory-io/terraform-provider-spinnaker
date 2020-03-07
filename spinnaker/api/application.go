@@ -16,7 +16,7 @@ func GetApplication(client *gate.GatewayClient, applicationName string, dest int
 		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			return fmt.Errorf("Application '%s' not found\n", applicationName)
 		} else if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("Encountered an error getting application, status code: %d\n", resp.StatusCode)
+			return fmt.Errorf("Encountered an error getting application '%s', status code: %d\n", applicationName, resp.StatusCode)
 		}
 	}
 

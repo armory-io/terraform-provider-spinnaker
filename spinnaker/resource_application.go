@@ -37,7 +37,11 @@ type applicationRead struct {
 
 func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	application := data.Get("application").(string)
 	email := data.Get("email").(string)
 
@@ -50,7 +54,11 @@ func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) erro
 
 func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	applicationName := data.Get("application").(string)
 	var app applicationRead
 	if err := api.GetApplication(client, applicationName, &app); err != nil {
@@ -66,7 +74,11 @@ func resourceApplicationUpdate(data *schema.ResourceData, meta interface{}) erro
 
 func resourceApplicationDelete(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	applicationName := data.Get("application").(string)
 
 	return api.DeleteAppliation(client, applicationName)
@@ -74,7 +86,11 @@ func resourceApplicationDelete(data *schema.ResourceData, meta interface{}) erro
 
 func resourceApplicationExists(data *schema.ResourceData, meta interface{}) (bool, error) {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return false, err
+	}
+
 	applicationName := data.Get("application").(string)
 
 	var app applicationRead
