@@ -48,7 +48,6 @@ func Provider() *schema.Provider {
 }
 
 type gateConfig struct {
-	server string
 	client *gate.GatewayClient
 }
 
@@ -73,7 +72,6 @@ func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
 	}
 
 	return gateConfig{
-		server: data.Get("server").(string),
 		client: client,
 	}, nil
 }
