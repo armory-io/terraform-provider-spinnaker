@@ -1,7 +1,14 @@
+# Terraform 
 .terraform
 *.tfstate*
-terraform-provider-spinnaker
-*.tf
 *.log
+
+# Binary 
+terraform-provider-spinnaker
+
+# For debugging
+*.tf
 pipelines
-vendor/*
+
+# Spin config
+config
