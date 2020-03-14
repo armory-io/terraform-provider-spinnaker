@@ -8,11 +8,22 @@ executors:
         environment:
           GO111MODULE: "on"
 
+commands:
+  prepare-spin-config:
+    description: Prepare Spinnaker spin's configuration file
+    steps:
+      - run:
+          name: Decode SPINNAKER_SPIN_CONFIG
+          command: |
+            mkdir -p ~/.spin
+            echo $SPINNAKER_SPIN_CONFIG | base64 -d > ~/.spin/config 
+
 jobs:
   test:
     executor: golang
     steps:
       - checkout
+      - prepare-spin-config
       - run: 
           name: Run test
           command: make test
@@ -21,6 +32,7 @@ jobs:
       executor: golang
       steps:
         - checkout
+        - prepare-spin-config
         - run:
             name: Run acceptance test
             command: make testacc
