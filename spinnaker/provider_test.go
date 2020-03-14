@@ -19,8 +19,8 @@ func init() {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if os.Getenv("GATE_URL") == "" {
-		t.Fatal("GATE_URL must be set for acceptance tests")
+	if os.Getenv("GATE_ENDPOINT") == "" {
+		t.Fatal("GATE_ENDPOINT must be set for acceptance tests")
 	}
 	err := testAccProvider.Configure(terraform.NewResourceConfig(nil))
 	if err != nil {
