@@ -31,12 +31,16 @@ func GetApplication(client *gate.GatewayClient, applicationName string, dest int
 	return nil
 }
 
-func CreateApplication(client *gate.GatewayClient, applicationName, email string) error {
+func CreateApplication(client *gate.GatewayClient, applicationName, email,
+	applicationDescription string, platformHealthOnly, platformHealthOnlyShowOverride bool) error {
 
 	app := map[string]interface{}{
-		"instancePort": 80,
-		"name":         applicationName,
-		"email":        email,
+		"instancePort":                   80,
+		"name":                           applicationName,
+		"email":                          email,
+		"platformHealthOnly":             platformHealthOnly,
+		"platformHealthOnlyShowOverride": platformHealthOnlyShowOverride,
+		"description":                    applicationDescription,
 	}
 
 	createAppTask := map[string]interface{}{
