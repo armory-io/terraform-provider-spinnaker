@@ -16,7 +16,7 @@ commands:
           name: Decode SPINNAKER_SPIN_CONFIG
           command: |
             mkdir -p ~/.spin
-            echo $SPINNAKER_SPIN_CONFIG | base64 -d > ~/.spin/config 
+            echo ${SPINNAKER_SPIN_CONFIG} | base64 -d > ./config
 
 jobs:
   test:
