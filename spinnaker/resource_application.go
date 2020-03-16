@@ -21,17 +21,17 @@ func resourceApplication() *schema.Resource {
 			},
 			"platform_health_only": {
 				Type:     schema.TypeBool,
-				Optional: false,
+				Optional: true,
 				Default:  false,
 			},
 			"platform_health_only_show_override": {
 				Type:     schema.TypeBool,
-				Optional: false,
+				Optional: true,
 				Default:  false,
 			},
 			"description": {
 				Type:     schema.TypeString,
-				Optional: false,
+				Optional: true,
 				Default:  "",
 			},
 		},
