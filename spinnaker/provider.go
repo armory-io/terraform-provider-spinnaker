@@ -9,11 +9,11 @@ import (
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"server": {
+			"gate_endpoint": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "URL for Gate",
-				DefaultFunc: schema.EnvDefaultFunc("GATE_URL", nil),
+				Description: "URL for Spinnaker Gate",
+				DefaultFunc: schema.EnvDefaultFunc("GATE_ENDPOINT", nil),
 			},
 			"config": {
 				Type:        schema.TypeString,
@@ -48,31 +48,30 @@ func Provider() *schema.Provider {
 }
 
 type gateConfig struct {
-	server string
 	client *gate.GatewayClient
 }
 
 func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
-	server := data.Get("server").(string)
+	gateEndpoint := data.Get("gate_endpoint").(string)
 	config := data.Get("config").(string)
 	ignoreCertErrors := data.Get("ignore_cert_errors").(bool)
 	defaultHeaders := data.Get("default_headers").(string)
 
 	flags := pflag.NewFlagSet("default", 1)
-	flags.String("gate-endpoint", server, "")
+	flags.String("gate-endpoint", gateEndpoint, "")
 	flags.Bool("quiet", false, "")
 	flags.Bool("insecure", ignoreCertErrors, "")
 	flags.Bool("no-color", true, "")
 	flags.String("output", "", "")
 	flags.String("config", config, "")
 	flags.String("default-headers", defaultHeaders, "")
-	// flags.Parse()
+
 	client, err := gate.NewGateClient(flags)
 	if err != nil {
 		return nil, err
 	}
+
 	return gateConfig{
-		server: data.Get("server").(string),
 		client: client,
 	}, nil
 }

@@ -12,3 +12,6 @@ pipelines
 
 # Spin config
 config
+
+# Enviroment variables
+.envrc

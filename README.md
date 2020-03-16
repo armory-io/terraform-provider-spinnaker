@@ -12,7 +12,7 @@ Manage [Spinnaker](https://spinnaker.io) applications and pipelines with Terrafo
 
 ```
 provider "spinnaker" {
-    server = "http://spinnaker-gate.myorg.io"
+    gate_endpoint = "http://spinnaker-gate.myorg.io"
 }
 
 resource "spinnaker_application" "my_app" {
@@ -49,7 +49,7 @@ See [Terraform documentation](https://www.terraform.io/docs/configuration/provid
 
 ```
 provider "spinnaker" {
-    server             = "http://spinnaker-gate.myorg.io"
+    gate_endpoint      = "http://spinnaker-gate.myorg.io"
     config             = "/path/to/config.yml"
     ignore_cert_errors = true
     default_headers    = "Api-Key=abc123"
@@ -58,7 +58,7 @@ provider "spinnaker" {
 
 #### Argument Reference
 
-* `server` - The Gate API Url
+* `gate_endpoint` - The Spinnaker Gate API URL
 * `config` - (Optional) - Path to Gate config file. See the [Spin CLI](https://github.com/spinnaker/spin/blob/master/config/example.yaml) for an example config.
 * `ignore_cert_errors` - (Optional) - Set this to `true` to ignore certificate errors from Gate. Defaults to `false`.
 * `default_headers` - (Optional) - Pass through a comma separated set of key value pairs to set default headers for the gate client when sending requests to your gate endpoint e.g. "header1=value1,header2=value2". Defaults to "".
