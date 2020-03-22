@@ -7,78 +7,123 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceApplication() *schema.Resource {
+func resourceSpinnakerApplication() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"application": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateApplicationName,
+				ValidateFunc: validateSpinnakerApplicationName,
 			},
 			"email": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 		},
-		Create: resourceApplicationCreate,
-		Read:   resourceApplicationRead,
-		Update: resourceApplicationUpdate,
-		Delete: resourceApplicationDelete,
-		Exists: resourceApplicationExists,
+		Create: resourceSpinnakerApplicationCreate,
+		Read:   resourceSpinnakerApplicationRead,
+		Update: resourceSpinnakerApplicationUpdate,
+		Delete: resourceSpinnakerApplicationDelete,
+		Exists: resourceSpinnakerApplicationExists,
+		Importer: &schema.ResourceImporter{
+			State: resourceSpinnakerApplicationImport,
+		},
 	}
 }
 
 type applicationRead struct {
-	Name       string `json:"name"`
-	Attributes struct {
-		Email string `json:"email"`
-	} `json:"attributes"`
+	Name       string                 `json:"name"`
+	Attributes *applicationAttributes `json:"attributes"`
 }
 
-func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) error {
+type applicationAttributes struct {
+	Accounts       string `json:"accounts"`
+	CloudProviders string `json:"cloudproviders"`
+	Email          string `json:"email"`
+	InstancePort   int    `json:"instancePort"`
+	LastModifiedBy string `json:"LastModifiedBy"`
+	Name           string `json:"name"`
+	RepoType       string `json:"repoType"`
+	User           string `json:"user"`
+}
+
+func resourceSpinnakerApplicationCreate(d *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	application := data.Get("application").(string)
-	email := data.Get("email").(string)
+	application := d.Get("application").(string)
+	email := d.Get("email").(string)
 
 	if err := api.CreateApplication(client, application, email); err != nil {
 		return err
 	}
 
-	return resourceApplicationRead(data, meta)
+	d.SetId(application)
+	return resourceSpinnakerApplicationRead(d, meta)
 }
 
-func resourceApplicationRead(data *schema.ResourceData, meta interface{}) error {
+func resourceSpinnakerApplicationRead(d *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	applicationName := data.Get("application").(string)
-	var app applicationRead
-	if err := api.GetApplication(client, applicationName, &app); err != nil {
+	application := d.Get("application").(string)
+	app := &applicationRead{}
+	if err := api.GetApplication(client, application, app); err != nil {
 		return err
 	}
 
-	return readApplication(data, app)
-}
+	if app == nil {
+		d.SetId("")
+		return nil
+	}
 
-func resourceApplicationUpdate(data *schema.ResourceData, meta interface{}) error {
+	if v := app.Attributes.Accounts; v != "" {
+		d.Set("accounts", v)
+	}
+	if v := app.Attributes.CloudProviders; v != "" {
+		d.Set("cloud_providers", v)
+	}
+	if v := app.Attributes.InstancePort; v != 0 {
+		d.Set("instance_port", v)
+	}
+	if v := app.Attributes.LastModifiedBy; v != "" {
+		d.Set("last_modified_by", v)
+	}
+	if v := app.Attributes.Name; v != "" {
+		d.Set("name", v)
+	}
+	if v := app.Attributes.RepoType; v != "" {
+		d.Set("repo_type", v)
+	}
+	if v := app.Attributes.User; v != "" {
+		d.Set("user", v)
+	}
+
 	return nil
 }
 
-func resourceApplicationDelete(data *schema.ResourceData, meta interface{}) error {
-	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
-	applicationName := data.Get("application").(string)
-
-	return api.DeleteAppliation(client, applicationName)
+func resourceSpinnakerApplicationUpdate(d *schema.ResourceData, meta interface{}) error {
+	return resourceSpinnakerApplicationRead(d, meta)
 }
 
-func resourceApplicationExists(data *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceSpinnakerApplicationDelete(d *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
-	applicationName := data.Get("application").(string)
+	application := d.Get("application").(string)
+
+	if err := api.DeleteAppliation(client, application); err != nil {
+		return err
+	}
+
+	d.SetId("")
+	return nil
+}
+
+func resourceSpinnakerApplicationExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	clientConfig := meta.(gateConfig)
+	client := clientConfig.client
+	application := d.Get("application").(string)
 
 	var app applicationRead
-	if err := api.GetApplication(client, applicationName, &app); err != nil {
+	if err := api.GetApplication(client, application, &app); err != nil {
 		errmsg := err.Error()
 		if strings.Contains(errmsg, "not found") {
 			return false, nil
@@ -93,7 +138,9 @@ func resourceApplicationExists(data *schema.ResourceData, meta interface{}) (boo
 	return true, nil
 }
 
-func readApplication(data *schema.ResourceData, application applicationRead) error {
-	data.SetId(application.Name)
-	return nil
+func resourceSpinnakerApplicationImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if err := resourceSpinnakerApplicationRead(d, meta); err != nil {
+		return nil, err
+	}
+	return []*schema.ResourceData{d}, nil
 }

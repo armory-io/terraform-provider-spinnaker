@@ -16,7 +16,7 @@ func resourcePipeline() *schema.Resource {
 				Type:         schema.TypeString,
 				ForceNew:     true,
 				Required:     true,
-				ValidateFunc: validateApplicationName,
+				ValidateFunc: validateSpinnakerApplicationName,
 			},
 			"name": {
 				Type:     schema.TypeString,
