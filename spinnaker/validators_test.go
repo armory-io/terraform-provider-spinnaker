@@ -11,7 +11,7 @@ func TestValidateApplicationName(t *testing.T) {
 		"invalid-name",
 	}
 	for _, v := range validNames {
-		_, errors := validateApplicationName(v, "application")
+		_, errors := validateSpinnakerApplicationName(v, "application")
 		if len(errors) != 0 {
 			t.Fatalf("%q should be a valid Application name: %q", v, errors)
 		}
@@ -24,7 +24,7 @@ func TestValidateApplicationName(t *testing.T) {
 		"",
 	}
 	for _, v := range invalidNames {
-		_, errors := validateApplicationName(v, "application")
+		_, errors := validateSpinnakerApplicationName(v, "application")
 		if len(errors) == 0 {
 			t.Fatalf("%q should be a valid Application name", v)
 		}

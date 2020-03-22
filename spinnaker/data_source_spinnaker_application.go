@@ -11,7 +11,7 @@ func datasourceApplication() *schema.Resource {
 				Type:         schema.TypeString,
 				ForceNew:     true,
 				Required:     true,
-				ValidateFunc: validateApplicationName,
+				ValidateFunc: validateSpinnakerApplicationName,
 			},
 			"email": {
 				Type:     schema.TypeString,
@@ -47,6 +47,6 @@ func datasourceApplication() *schema.Resource {
 				Computed: true,
 			},
 		},
-		Read: resourceApplicationRead,
+		Read: resourceSpinnakerApplicationRead,
 	}
 }

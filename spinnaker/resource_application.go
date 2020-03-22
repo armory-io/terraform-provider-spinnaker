@@ -7,24 +7,27 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceApplication() *schema.Resource {
+func resourceSpinnakerApplication() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"application": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateApplicationName,
+				ValidateFunc: validateSpinnakerApplicationName,
 			},
 			"email": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 		},
-		Create: resourceApplicationCreate,
-		Read:   resourceApplicationRead,
-		Update: resourceApplicationUpdate,
-		Delete: resourceApplicationDelete,
-		Exists: resourceApplicationExists,
+		Create: resourceSpinnakerApplicationCreate,
+		Read:   resourceSpinnakerApplicationRead,
+		Update: resourceSpinnakerApplicationUpdate,
+		Delete: resourceSpinnakerApplicationDelete,
+		Exists: resourceSpinnakerApplicationExists,
+		Importer: &schema.ResourceImporter{
+			State: resourceSpinnakerApplicationImport,
+		},
 	}
 }
 
@@ -44,7 +47,7 @@ type applicationAttributes struct {
 	User           string `json:"user"`
 }
 
-func resourceApplicationCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceSpinnakerApplicationCreate(d *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	application := d.Get("application").(string)
@@ -55,10 +58,10 @@ func resourceApplicationCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(application)
-	return resourceApplicationRead(d, meta)
+	return resourceSpinnakerApplicationRead(d, meta)
 }
 
-func resourceApplicationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceSpinnakerApplicationRead(d *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	application := d.Get("application").(string)
@@ -97,11 +100,11 @@ func resourceApplicationRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceApplicationUpdate(d *schema.ResourceData, meta interface{}) error {
-	return resourceApplicationRead(d, meta)
+func resourceSpinnakerApplicationUpdate(d *schema.ResourceData, meta interface{}) error {
+	return resourceSpinnakerApplicationRead(d, meta)
 }
 
-func resourceApplicationDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceSpinnakerApplicationDelete(d *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	application := d.Get("application").(string)
@@ -114,7 +117,7 @@ func resourceApplicationDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceApplicationExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func resourceSpinnakerApplicationExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	clientConfig := meta.(gateConfig)
 	client := clientConfig.client
 	application := d.Get("application").(string)
@@ -133,4 +136,11 @@ func resourceApplicationExists(d *schema.ResourceData, meta interface{}) (bool, 
 	}
 
 	return true, nil
+}
+
+func resourceSpinnakerApplicationImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if err := resourceSpinnakerApplicationRead(d, meta); err != nil {
+		return nil, err
+	}
+	return []*schema.ResourceData{d}, nil
 }
