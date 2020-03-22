@@ -2,26 +2,30 @@ package spinnaker
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccSpinnakerApplication_basic(t *testing.T) {
+func TestAccResourceSourceSpinnakerApplication_basic(t *testing.T) {
 	resourceName := "spinnaker_application.test"
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckSpinnakerApplicatioDestroy(resourceName),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSpinnakerApplication_basic(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckApplicationExists(resourceName),
+					testAccCheckSpinnakerApplicationExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "application", rName),
 					resource.TestCheckResourceAttr(resourceName, "email", "acceptance@test.com"),
 				),
@@ -30,11 +34,55 @@ func TestAccSpinnakerApplication_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckApplicationExists(n string) resource.TestCheckFunc {
+func testAccCheckSpinnakerApplicatioDestroy(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Application Not found: %s", n)
+			return fmt.Errorf("Application not found, application: %s", n)
+		}
+
+		application := rs.Primary.ID
+		if application == "" {
+			return fmt.Errorf("No Application ID is set")
+		}
+
+		client := testAccProvider.Meta().(gateConfig).client
+		app := &applicationRead{}
+
+		retry := 5
+		for {
+			if err := api.GetApplication(client, application, app); err != nil {
+				if strings.Contains(err.Error(), "not found") {
+					return nil
+				}
+
+				return err
+			}
+
+			if app == nil {
+				return nil
+			}
+
+			if app != nil {
+				retry--
+				log.Printf("[INFO] Retring CheckDestroy in 1 seconds, retry count: %v", 5-retry)
+				time.Sleep(1 * time.Second)
+			}
+
+			if retry <= 0 {
+				break
+			}
+		}
+
+		return fmt.Errorf("Spinnaker Application still exists, application: %s", application)
+	}
+}
+
+func testAccCheckSpinnakerApplicationExists(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Application not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

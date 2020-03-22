@@ -32,7 +32,6 @@ func GetApplication(client *gate.GatewayClient, applicationName string, dest int
 }
 
 func CreateApplication(client *gate.GatewayClient, applicationName, email string) error {
-
 	app := map[string]interface{}{
 		"instancePort": 80,
 		"name":         applicationName,
