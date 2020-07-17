@@ -1,0 +1,44 @@
+<% wrap_layout :inner do %>
+  <% content_for :sidebar do %>
+    <div class="docs-sidebar hidden-print affix-top" role="complementary">
+      <ul class="nav docs-sidenav">
+        <li<%= sidebar_current("docs-home") %>>
+          <a href="/docs/providers/index.html">All Providers</a>
+        </li>
+
+        <li<%= sidebar_current("docs-spinnaker-index") %>>
+          <a href="/docs/providers/spinnaker/index.html">Datadog Provider</a>
+        </li>
+
+        <li<%= sidebar_current("docs-spinnaker-datasource") %>>
+          <a href="#">Data Sources</a>
+          <ul class="nav nav-visible">
+            <li<%= sidebar_current("docs-spinnaker-datasource-application") %>>
+              <a href="/docs/providers/spinnanker/d/application.html">spinnaker_application</a>
+            </li>
+             <li<%= sidebar_current("docs-spinnaker-datasource-application") %>>
+              <a href="/docs/providers/spinnanker/d/pipeline.html">spinnaker_pipeline</a>
+             </li>
+          </ul>
+        </li>
+
+        <li<%= sidebar_current("docs-spinnaker-resource") %>>
+          <a href="#">Resources</a>
+          <ul class="nav nav-visible">
+            <li<%= sidebar_current("docs-spinnaker-resource-application") %>>
+              <a href="/docs/providers/spinnaker/r/application.html">spinnaker_application</a>
+            </li>
+            <li<%= sidebar_current("docs-spinnaker-resource-pipeline") %>>
+              <a href="/docs/providers/spinnaker/r/pipeline.html">spinnaker_pipeline</a>
+            </li>
+            <li<%= sidebar_current("docs-spinnaker-resource-pipeline-template") %>>
+              <a href="/docs/providers/spinnaker/r/pipeline_template.html">spinnaker_pipeline_template</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= yield %>
+<% end %>
