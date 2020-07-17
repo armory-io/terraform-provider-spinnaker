@@ -15,3 +15,6 @@ config
 
 # Enviroment variables
 .envrc
+
+# IDE
+.idea/
