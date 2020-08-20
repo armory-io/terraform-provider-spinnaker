@@ -8,10 +8,11 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	gate "github.com/spinnaker/spin/cmd/gateclient"
+	gateapi "github.com/spinnaker/spin/gateapi"
 )
 
 func GetApplication(client *gate.GatewayClient, applicationName string, dest interface{}) error {
-	app, resp, err := client.ApplicationControllerApi.GetApplicationUsingGET(client.Context, applicationName, map[string]interface{}{})
+	app, resp, err := client.ApplicationControllerApi.GetApplicationUsingGET(client.Context, applicationName, &gateapi.ApplicationControllerApiGetApplicationUsingGETOpts{})
 	if resp != nil {
 		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			return fmt.Errorf("Application '%s' not found\n", applicationName)

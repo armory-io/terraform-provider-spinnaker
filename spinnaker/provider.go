@@ -1,9 +1,10 @@
 package spinnaker
 
 import (
+	"os"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/spf13/pflag"
 	gate "github.com/spinnaker/spin/cmd/gateclient"
+	output "github.com/spinnaker/spin/cmd/output"
 )
 
 func Provider() *schema.Provider {
@@ -52,25 +53,57 @@ type gateConfig struct {
 	client *gate.GatewayClient
 }
 
+type RootOptions struct {
+	configPath       string
+	gateEndpoint     string
+	ignoreCertErrors bool
+	quiet            bool
+	color            bool
+	outputFormat     string
+	defaultHeaders   string
+
+	Ui         output.Ui
+	GateClient *gate.GatewayClient
+
+}
+
 func providerConfigureFunc(data *schema.ResourceData) (interface{}, error) {
 	server := data.Get("server").(string)
 	config := data.Get("config").(string)
 	ignoreCertErrors := data.Get("ignore_cert_errors").(bool)
 	defaultHeaders := data.Get("default_headers").(string)
 
-	flags := pflag.NewFlagSet("default", 1)
-	flags.String("gate-endpoint", server, "")
-	flags.Bool("quiet", false, "")
-	flags.Bool("insecure", ignoreCertErrors, "")
-	flags.Bool("no-color", true, "")
-	flags.String("output", "", "")
-	flags.String("config", config, "")
-	flags.String("default-headers", defaultHeaders, "")
-	// flags.Parse()
-	client, err := gate.NewGateClient(flags)
+	options := &RootOptions{}
+
+	options.configPath = config
+	options.gateEndpoint = server
+	options.ignoreCertErrors = ignoreCertErrors
+	options.defaultHeaders = defaultHeaders
+	options.quiet = false
+	options.color = false
+	options.outputFormat  = ""
+
+	outputFormater,err := output.ParseOutputFormat(options.outputFormat)
 	if err != nil {
 		return nil, err
 	}
+
+	options.Ui = output.NewUI(options.quiet, options.color, outputFormater, os.Stdout, os.Stderr)
+
+	client, err := gate.NewGateClient(
+		options.Ui,
+		options.gateEndpoint,
+		options.defaultHeaders,
+		options.configPath,
+		options.ignoreCertErrors,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	options.GateClient = client
+
 	return gateConfig{
 		server: data.Get("server").(string),
 		client: client,
