@@ -2,8 +2,8 @@
 # behavior.
 before:
   hooks:
-    # this is just an example and not a requirement for provider building/publishing
-    - go mod tidy
+    - go mod download
+    - go generate ./...
 builds:
   - env:
       # goreleaser does not work with CGO, it could also complicate
@@ -43,6 +43,7 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 release:
+  prerelease: auto
   # If you want to manually examine the release before its live, uncomment this line:
   # draft: true
 changelog:
