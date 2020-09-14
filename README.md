@@ -1,5 +1,3 @@
-[![CircleCI](https://circleci.com/gh/armory-io/terraform-provider-spinnaker/tree/master.svg?style=svg)](https://circleci.com/gh/armory-io/terraform-provider-spinnaker/tree/master)
-
 # terraform-provider-spinnaker
 
 Manage [Spinnaker](https://spinnaker.io) applications and pipelines with Terraform.
@@ -58,10 +56,10 @@ provider "spinnaker" {
 
 #### Argument Reference
 
-* `server` - The Gate API Url
-* `config` - (Optional) - Path to Gate config file. See the [Spin CLI](https://github.com/spinnaker/spin/blob/master/config/example.yaml) for an example config.
-* `ignore_cert_errors` - (Optional) - Set this to `true` to ignore certificate errors from Gate. Defaults to `false`.
-* `default_headers` - (Optional) - Pass through a comma separated set of key value pairs to set default headers for the gate client when sending requests to your gate endpoint e.g. "header1=value1,header2=value2". Defaults to "".
+- `server` - The Gate API Url
+- `config` - (Optional) - Path to Gate config file. See the [Spin CLI](https://github.com/spinnaker/spin/blob/master/config/example.yaml) for an example config.
+- `ignore_cert_errors` - (Optional) - Set this to `true` to ignore certificate errors from Gate. Defaults to `false`.
+- `default_headers` - (Optional) - Pass through a comma separated set of key value pairs to set default headers for the gate client when sending requests to your gate endpoint e.g. "header1=value1,header2=value2". Defaults to "".
 
 ## Resources
 
@@ -75,9 +73,11 @@ resource "spinnaker_application" "my_app" {
     email = "ethan@armory.io"
 }
 ```
+
 #### Argument Reference
-* `application` - Application name
-* `email` - Owner email
+
+- `application` - Application name
+- `email` - Owner email
 
 ### `spinnaker_pipeline`
 
@@ -93,9 +93,9 @@ resource "spinnaker_pipeline" "terraform_example" {
 
 #### Argument Reference
 
-* `application` - Application name
-* `name` - Pipeline name
-* `pipeline` - Pipeline JSON in string format, example `file(pipelines/example.json)`
+- `application` - Application name
+- `name` - Pipeline name
+- `pipeline` - Pipeline JSON in string format, example `file(pipelines/example.json)`
 
 ### `spinnaker_pipeline_template`
 
@@ -113,7 +113,7 @@ resource "spinnaker_pipeline_template" "terraform_example" {
 
 #### Argument Reference
 
-* `template` - A yaml formated [DCD Spec pipeline template](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#templates) 
+- `template` - A yaml formated [DCD Spec pipeline template](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#templates)
 
 ### `spinnaker_pipeline_template_config`
 
@@ -131,4 +131,4 @@ resource "spinnaker_pipeline_template_config" "terraform_example" {
 
 #### Argument Reference
 
-* `pipeline_config` - A yaml formated [DCD Spec pipeline configuration](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#configurations)
+- `pipeline_config` - A yaml formated [DCD Spec pipeline configuration](https://github.com/spinnaker/dcd-spec/blob/master/PIPELINE_TEMPLATES.md#configurations)
