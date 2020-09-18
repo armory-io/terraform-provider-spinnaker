@@ -5,3 +5,5 @@ terraform-provider-spinnaker
 *.log
 pipelines
 vendor/*
+/dist/
+*.key

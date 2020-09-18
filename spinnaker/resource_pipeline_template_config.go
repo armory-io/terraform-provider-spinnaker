@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
+	"github.com/tidal-engineering/terraform-provider-spinnaker/spinnaker/api"
 	"github.com/ghodss/yaml"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 type PipelineConfig struct {

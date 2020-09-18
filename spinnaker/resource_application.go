@@ -3,16 +3,17 @@ package spinnaker
 import (
 	"strings"
 
-	"github.com/armory-io/terraform-provider-spinnaker/spinnaker/api"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/tidal-engineering/terraform-provider-spinnaker/spinnaker/api"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceApplication() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"application": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validateApplicationName,
 			},
 			"email": {
 				Type:     schema.TypeString,
