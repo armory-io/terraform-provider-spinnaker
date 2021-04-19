@@ -24,6 +24,31 @@ func TestAccSpinnakerApplication_basic(t *testing.T) {
 					testAccCheckApplicationExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "application", rName),
 					resource.TestCheckResourceAttr(resourceName, "email", "acceptance@test.com"),
+					resource.TestCheckResourceAttr(resourceName, "description", ""),
+					resource.TestCheckResourceAttr(resourceName, "platformHealthOnly", "false"),
+					resource.TestCheckResourceAttr(resourceName, "platformHealthOnly", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSpinnakerApplication_nondefault(t *testing.T) {
+	resourceName := "spinnaker_application.test"
+	rName := acctest.RandomWithPrefix("tf-acc-test")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSpinnakerApplication_basic(rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckApplicationExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "application", rName),
+					resource.TestCheckResourceAttr(resourceName, "email", "acceptance@test.com"),
+					resource.TestCheckResourceAttr(resourceName, "description", "My application"),
+					resource.TestCheckResourceAttr(resourceName, "platformHealthOnly", "true"),
+					resource.TestCheckResourceAttr(resourceName, "platformHealthOnly", "true"),
 				),
 			},
 		},
@@ -67,6 +92,18 @@ func testAccSpinnakerApplication_basic(rName string) string {
 resource "spinnaker_application" "test" {
 	application  = %q
 	email = "acceptance@test.com"
+}
+`, rName)
+}
+
+func testAccSpinnakerApplication_nondefault(rName string) string {
+	return fmt.Sprintf(`
+resource "spinnaker_application" "test" {
+	application  = %q
+	email = "acceptance@test.com"
+	description = "My application"
+	platform_health_only = true
+	platform_health_only_show_override = true
 }
 `, rName)
 }

@@ -19,6 +19,21 @@ func resourceApplication() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"platform_health_only": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"platform_health_only_show_override": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "",
+			},
 		},
 		Create: resourceApplicationCreate,
 		Read:   resourceApplicationRead,
@@ -40,8 +55,11 @@ func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) erro
 	client := clientConfig.client
 	application := data.Get("application").(string)
 	email := data.Get("email").(string)
+	description := data.Get("description").(string)
+	platform_health_only := data.Get("platform_health_only").(bool)
+	platform_health_only_show_override := data.Get("platform_health_only_show_override").(bool)
 
-	if err := api.CreateApplication(client, application, email); err != nil {
+	if err := api.CreateApplication(client, application, email, description, platform_health_only, platform_health_only_show_override); err != nil {
 		return err
 	}
 
