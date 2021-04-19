@@ -6,7 +6,7 @@ Manage [Spinnaker](https://spinnaker.io) applications and pipelines with Terrafo
 
 ## Note - this project is experimental and not supported by Armory for production use.
 
-We are not actively developing `terraform-provider-spinnaker`. If anyone is interested in taking over maintenance of this project, please reach out to `engineering@armory.io`.
+We are not actively developing `terraform-provider-spinnaker`. If anyone is interested in taking over maintenance of this project, please reach out to `engineering@armory.io`. If you'd like to learn more about what features Armory supports, checkout our [Platform Compatibility Matrix](https://docs.armory.io/docs/armory-enterprise-matrix/).
 
 ## Demo
 
