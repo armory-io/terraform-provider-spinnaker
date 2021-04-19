@@ -19,6 +19,10 @@ func resourceApplication() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"canary": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 		Create: resourceApplicationCreate,
 		Read:   resourceApplicationRead,
@@ -40,9 +44,16 @@ func resourceApplicationCreate(data *schema.ResourceData, meta interface{}) erro
 	client := clientConfig.client
 	application := data.Get("application").(string)
 	email := data.Get("email").(string)
+	canary := data.Get("canary").(bool)
 
-	if err := api.CreateApplication(client, application, email); err != nil {
+	if err := api.CreateApplication(client, application, email, canary); err != nil {
 		return err
+	}
+	if canary {
+		err := api.EnableApplicationCanary(client, application)
+		if err != nil {
+			return err
+		}
 	}
 
 	return resourceApplicationRead(data, meta)
