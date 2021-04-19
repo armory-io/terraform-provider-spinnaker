@@ -49,7 +49,11 @@ type pipelineRead struct {
 
 func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	applicationName := data.Get("application").(string)
 	pipelineName := data.Get("name").(string)
 	pipeline := data.Get("pipeline").(string)
@@ -72,7 +76,11 @@ func resourcePipelineCreate(data *schema.ResourceData, meta interface{}) error {
 
 func resourcePipelineRead(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	applicationName := data.Get("application").(string)
 	pipelineName := data.Get("name").(string)
 
@@ -102,7 +110,11 @@ func resourcePipelineRead(data *schema.ResourceData, meta interface{}) error {
 
 func resourcePipelineUpdate(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	applicationName := data.Get("application").(string)
 	pipelineName := data.Get("name").(string)
 	pipeline := data.Get("pipeline").(string)
@@ -113,7 +125,7 @@ func resourcePipelineUpdate(data *schema.ResourceData, meta interface{}) error {
 	}
 
 	var pipe map[string]interface{}
-	err := json.Unmarshal([]byte(pipeline), &pipe)
+	err = json.Unmarshal([]byte(pipeline), &pipe)
 	if err != nil {
 		return fmt.Errorf("could not unmarshal pipeline")
 	}
@@ -130,7 +142,11 @@ func resourcePipelineUpdate(data *schema.ResourceData, meta interface{}) error {
 
 func resourcePipelineDelete(data *schema.ResourceData, meta interface{}) error {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return err
+	}
+
 	applicationName := data.Get("application").(string)
 	pipelineName := data.Get("name").(string)
 
@@ -143,7 +159,11 @@ func resourcePipelineDelete(data *schema.ResourceData, meta interface{}) error {
 
 func resourcePipelineExists(data *schema.ResourceData, meta interface{}) (bool, error) {
 	clientConfig := meta.(gateConfig)
-	client := clientConfig.client
+	client, err := clientConfig.getClient()
+	if err != nil {
+		return false, err
+	}
+
 	applicationName := data.Get("application").(string)
 	pipelineName := data.Get("name").(string)
 
